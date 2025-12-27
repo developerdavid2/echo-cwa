@@ -15,6 +15,10 @@ export const createUser = mutation({
     name: v.string(),
   },
   handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (identity === null) {
+      throw new Error("Not authenticated");
+    }
     await ctx.db.insert("users", {
       name: args.name,
     });
