@@ -28,6 +28,8 @@ export const createUser = mutation({
     await ctx.db.insert("users", {
       name: args.name,
     });
+
+    throw new Error("Tracking test");
   },
 });
 
