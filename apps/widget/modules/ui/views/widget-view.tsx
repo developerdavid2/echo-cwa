@@ -1,8 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { WidgetFooter } from "../components/widget-footer";
-import { WidgetHeader } from "../components/widget-header";
+import { WidgetAuthScreen } from "../screens/widget-auth-screen";
 
 type WidgetScreen = "selection" | "inbox";
 
@@ -15,19 +14,9 @@ export const WidgetView = ({ organizationId }: Props) => {
 
   return (
     <main className="min-h-screen min-w-screen flex h-full w-full flex-col overflow-hidden rounded-xl border bg-muted">
-      <WidgetHeader>
-        <div className="flex flex-col justify-between gap-y-2 px-2 py-6 font-semibold">
-          <p className=" text-3xl">Hi there! 👋</p>
-          <p className="text-lg">How can we help you today?</p>
-        </div>
-      </WidgetHeader>
-      <div className="flex-1 p-4">
-        Widget View: {organizationId}
-        <br />
-        Current screen: <strong>{screen}</strong>
-      </div>
+      <WidgetAuthScreen />
 
-      <WidgetFooter screen={screen} onScreenChange={setScreen} />
+      {/* <WidgetFooter screen={screen} onScreenChange={setScreen} /> */}
     </main>
   );
 };
