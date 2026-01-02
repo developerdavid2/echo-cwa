@@ -1,5 +1,5 @@
 import { useForm } from "react-hook-form";
-import z, { zod } from "zod";
+import z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import {
@@ -12,11 +12,8 @@ import {
 import { Button } from "@workspace/ui/components/button";
 import { Input } from "@workspace/ui/components/input";
 import { WidgetHeader } from "../components/widget-header";
-import { type } from "./../../../../../packages/ui/src/components/chart";
 import { useMutation } from "convex/react";
 import { api } from "./../../../../../packages/backend/convex/_generated/api";
-import { userAgent } from "next/server";
-import { platform } from "os";
 import { Doc } from "@workspace/backend/_generated/dataModel";
 
 const formSchema = z.object({

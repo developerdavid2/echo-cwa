@@ -1,6 +1,5 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
-import { platform } from "node:os";
 
 export default defineSchema({
   contactSessions: defineTable({
