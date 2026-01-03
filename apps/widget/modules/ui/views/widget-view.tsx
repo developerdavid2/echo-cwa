@@ -4,6 +4,8 @@ import { useState } from "react";
 import { WidgetAuthScreen } from "../screens/widget-auth-screen";
 import { useAtomValue } from "jotai";
 import { screenAtom } from "@/modules/widget/atoms/widget-atoms";
+import { WidgetErrorScreen } from "../screens/widget-error-screen";
+import { WidgetLoadingScreen } from "../screens/widget-loading-screen";
 
 type WidgetScreen = "selection" | "inbox";
 
@@ -15,8 +17,8 @@ export const WidgetView = ({ organizationId }: Props) => {
   const screen = useAtomValue(screenAtom);
 
   const screenComponents = {
-    error: <p>TODO: error</p>,
-    loading: <p>TODO: loading</p>,
+    loading: <WidgetLoadingScreen organizationId={organizationId} />,
+    error: <WidgetErrorScreen />,
     auth: <WidgetAuthScreen />,
     voice: <p>TODO: voice</p>,
     inbox: <p>TODO: inbox</p>,
