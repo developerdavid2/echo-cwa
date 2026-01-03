@@ -103,21 +103,23 @@ export const WidgetLoadingScreen = ({
       contacSessionId: contactSessionId as Id<"contactSessions">,
     })
       .then((result) => {
-        if (result.valid === true) {
-          setSessionValid(result.valid);
-          setStep("done");
-        } else {
-          setSessionValid(false);
-
-          setStep("settings");
-        }
+        setSessionValid(result.valid);
+        setStep("done");
       })
       .catch(() => {
-        setErrorMessage("Unable to verify organization");
-
-        setScreen("error");
+        setSessionValid(false);
+        setStep("done");
       });
-  }, []);
+  }, [contactSessionId, setLoadingMessage, step, validateContactSession]);
+
+  useEffect(() => {
+    if (step !== "done") {
+      return;
+    }
+
+    const hasValidSession = contactSessionId && sessionValid;
+    setScreen(hasValidSession ? "selection" : "auth");
+  }, [contactSessionId, sessionValid, setScreen, step]);
 
   return (
     <>
