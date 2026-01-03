@@ -1,17 +1,19 @@
 "use client";
 
 import {
+  contactSessionIdAtomFamily,
   errorMessageAtom,
   loadingMessageAtom,
   organizationIdAtom,
   screenAtom,
 } from "@/modules/widget/atoms/widget-atoms";
 import { api } from "@workspace/backend/_generated/api";
-import { useAction } from "convex/react";
+import { useAction, useMutation } from "convex/react";
 import { useAtomValue, useSetAtom } from "jotai";
 import { LoaderIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { WidgetHeader } from "../components/widget-header";
+import { Id } from "@workspace/backend/_generated/dataModel";
 
 type InitStep = "org" | "session" | "settings" | "vapi" | "done";
 
@@ -23,6 +25,10 @@ export const WidgetLoadingScreen = ({
   const [step, setStep] = useState<InitStep>("org");
 
   const [sessionValid, setSessionValid] = useState(false);
+
+  const contactSessionId = useAtomValue(
+    contactSessionIdAtomFamily(organizationId || "")
+  );
   const loadingMessage = useAtomValue(loadingMessageAtom);
 
   const setOrganizationId = useSetAtom(organizationIdAtom);
@@ -38,7 +44,7 @@ export const WidgetLoadingScreen = ({
       return;
     }
 
-    setLoadingMessage("Loading organization");
+    setLoadingMessage("Finding organization ID ...");
 
     if (!organizationId) {
       setErrorMessage("Organization ID is required");
@@ -73,7 +79,47 @@ export const WidgetLoadingScreen = ({
     setOrganizationId,
   ]);
 
-  // useEffect(() => {}, []);
+  // Step 2: Validate session if exists
+  const validateContactSession = useMutation(
+    api.public.contactSession.validate
+  );
+  useEffect(() => {
+    if (step !== "session") {
+      return;
+    }
+
+    setLoadingMessage("Finding contact session ID");
+
+    if (!contactSessionId) {
+      setSessionValid(false);
+      setStep("done");
+
+      return;
+    }
+
+    setLoadingMessage("Validating session...");
+
+    validateContactSession({
+      contacSessionId: contactSessionId as Id<"contactSessions">,
+    })
+      .then((result) => {
+        setSessionValid(result.valid);
+        setStep("done");
+      })
+      .catch(() => {
+        setSessionValid(false);
+        setStep("done");
+      });
+  }, [contactSessionId, setLoadingMessage, step, validateContactSession]);
+
+  useEffect(() => {
+    if (step !== "done") {
+      return;
+    }
+
+    const hasValidSession = contactSessionId && sessionValid;
+    setScreen(hasValidSession ? "selection" : "auth");
+  }, [contactSessionId, sessionValid, setScreen, step]);
 
   return (
     <>
