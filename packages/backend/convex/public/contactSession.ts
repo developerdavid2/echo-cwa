@@ -43,11 +43,11 @@ export const create = mutation({
 
 export const validate = mutation({
   args: {
-    contacSessionId: v.id("contactSessions"),
+    contactSessionId: v.id("contactSessions"),
   },
 
   handler: async (ctx, args) => {
-    const contactSession = await ctx.db.get(args.contacSessionId);
+    const contactSession = await ctx.db.get(args.contactSessionId);
 
     if (!contactSession) {
       return { valid: false, reason: "Contact session not found" };
