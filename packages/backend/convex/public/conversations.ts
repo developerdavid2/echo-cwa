@@ -1,6 +1,8 @@
 import { ConvexError, v } from "convex/values";
 import { mutation, query } from "../_generated/server";
-import { threadId } from "node:worker_threads";
+import { supportAgent } from "../system/ai/agents/supportAgent";
+import { saveMessage } from "@convex-dev/agent";
+import { components } from "../_generated/api";
 
 export const create = mutation({
   args: {
@@ -17,8 +19,18 @@ export const create = mutation({
       });
     }
 
-    //TODO: Replace once functionality for thread creationis present
-    const threadId = "123";
+    const { threadId } = await supportAgent.createThread(ctx, {
+      userId: args.organizationId,
+    });
+
+    await saveMessage(ctx, components.agent, {
+      threadId,
+      message: {
+        role: "assistant",
+        //TODO: Later modi
+        content: "Hello, how can I help you today",
+      },
+    });
 
     const conversationId = await ctx.db.insert("conversations", {
       contactSessionId: contactSession._id,
