@@ -1,8 +1,9 @@
-@import "tailwindcss";
+/* @import "tailwindcss"; */
+/* Add @source directives to scan for classes */
+
 @source "../../../apps/**/*.{ts,tsx}";
 @source "../../../components/**/*.{ts,tsx}";
 @source "../**/*.{ts,tsx}";
-
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));

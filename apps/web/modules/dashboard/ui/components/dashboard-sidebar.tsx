@@ -170,7 +170,7 @@ export const DashboardSidebar = () => {
                     isActive={isActive(item.url)}
                     className={cn(
                       isActive(item.url) &&
-                        "bg-gradient-to-r from-[#1e5799] via-50% via-[#2989d8] to-[#7db9e8]! text-sidebar-primary-foreground! hover:to-[#0b63f3]/90!"
+                        "bg-linear-to-r from-[#1e5799] via-50% via-[#2989d8] to-[#7db9e8]! text-sidebar-primary-foreground! hover:to-[#0b63f3]/90!"
                     )}
                   >
                     <Link href={item.url}>
