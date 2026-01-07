@@ -1,6 +1,7 @@
 "use client";
 
 import { OrganizationSwitcher, UserButton } from "@clerk/nextjs";
+import { Button } from "@workspace/ui/components/button";
 
 export default function Page() {
   return (

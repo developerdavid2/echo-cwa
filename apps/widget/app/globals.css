@@ -1,0 +1,6 @@
+@import "tailwindcss";
+
+/* Import shared styles/variables from UI package */
+@import "@workspace/ui/globals.css";
+
+/* Optional: add more @source if needed, but your UI one already covers it */
