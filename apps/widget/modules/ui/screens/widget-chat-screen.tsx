@@ -40,6 +40,9 @@ import { useThreadMessages, toUIMessages } from "@convex-dev/agent/react";
 
 import { Id } from "@workspace/backend/_generated/dataModel";
 import { Form, FormField } from "@workspace/ui/components/form";
+import { useInfiniteScroll } from "@workspace/ui/hooks/use-infinite-scroll";
+import { InfiniteScrollTrigger } from "@workspace/ui/components/infinite-scroll-trigger";
+import { DicebearAvatar } from "./../../../../../packages/ui/src/components/dicebear-avatar";
 
 const formSchema = z.object({
   message: z.string().min(1, "Message is required"),
@@ -84,6 +87,14 @@ export const WidgetChatScreen = () => {
     { initialNumItems: 10 }
   );
 
+  const { topElementRef, handleLoadMore, canLoadMore, isLoadingMore } =
+    useInfiniteScroll({
+      status: messages.status,
+      loadMore: messages.loadMore,
+      loadSize: 10,
+    });
+
+  // FORM SUBMISSION
   const form = useForm<FormSchema>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -120,6 +131,12 @@ export const WidgetChatScreen = () => {
       </WidgetHeader>
       <AIConversation>
         <AIConversationContent>
+          <InfiniteScrollTrigger
+            canLoadMore={canLoadMore}
+            isLoadingMore={isLoadingMore}
+            onLoadMore={handleLoadMore}
+            ref={topElementRef}
+          />
           {toUIMessages(messages.results ?? [])?.map((message) => {
             return (
               <AIMessage
@@ -130,6 +147,22 @@ export const WidgetChatScreen = () => {
                   <AIResponse>{message.content}</AIResponse>
                 </AIMessageContent>
                 {/*TODO: Add Avatar component for each role  */}
+                {message?.role === "assistant" && (
+                  <DicebearAvatar
+                    imageUrl="/logo.svg"
+                    seed="assistant"
+                    size={32}
+                    // badgeImageUrl="/logo.svg"
+                  />
+                )}
+                {message?.role === "user" && (
+                  <DicebearAvatar
+                    // imageUrl="/logo.svg"
+                    seed="assistant"
+                    size={32}
+                    // badgeImageUrl="/logo.svg"
+                  />
+                )}
               </AIMessage>
             );
           })}
