@@ -4,7 +4,7 @@ import {
 } from "@workspace/ui/components/ai/message";
 import { cn } from "@workspace/ui/lib/utils";
 
-export function AIMessageSkeleton({
+export function ChatMessageSkeleton({
   from = "assistant",
 }: {
   from?: "user" | "assistant";

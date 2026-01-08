@@ -1,51 +1,38 @@
-import { useCallback, useEffect, useRef } from "react";
+import useInfiniteScroll from "react-infinite-scroll-hook";
 
 interface UseInfiniteScrollProps {
   status: "LoadingFirstPage" | "CanLoadMore" | "LoadingMore" | "Exhausted";
   loadMore: (numItems: number) => void;
   loadSize?: number;
-  observerEnabled?: boolean;
+  rootMargin?: string;
+  disabled?: boolean;
 }
 
-export const useInfiniteScroll = ({
+/**
+ * Custom hook for infinite scrolling using react-infinite-scroll-hook
+ * Handles both top and bottom infinite scroll scenarios
+ */
+export const useInfiniteScrollWithHook = ({
   status,
   loadMore,
   loadSize = 10,
-  observerEnabled = true,
+  rootMargin = "400px",
+  disabled = false,
 }: UseInfiniteScrollProps) => {
-  const topElementRef = useRef<HTMLDivElement | null>(null);
+  const loading = status === "LoadingMore" || status === "LoadingFirstPage";
+  const hasNextPage = status === "CanLoadMore";
 
-  const handleLoadMore = useCallback(() => {
-    if (status === "CanLoadMore") {
-      loadMore(loadSize);
-    }
-  }, [status, loadMore, loadSize]);
-
-  useEffect(() => {
-    const topElement = topElementRef.current;
-    if (!(topElement && observerEnabled)) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry?.isIntersecting) {
-          handleLoadMore();
-        }
-      },
-      {
-        threshold: 0.1,
-      }
-    );
-
-    observer.observe(topElement);
-
-    return () => {
-      observer.disconnect();
-    };
-  }, [handleLoadMore, observerEnabled]);
+  const [sentryRef] = useInfiniteScroll({
+    loading,
+    hasNextPage,
+    onLoadMore: () => loadMore(loadSize),
+    disabled,
+    rootMargin,
+    delayInMs: 100,
+  });
 
   return {
-    topElementRef,
-    handleLoadMore,
+    sentryRef,
     canLoadMore: status === "CanLoadMore",
     isLoadingMore: status === "LoadingMore",
     isLoadingFirstPage: status === "LoadingFirstPage",

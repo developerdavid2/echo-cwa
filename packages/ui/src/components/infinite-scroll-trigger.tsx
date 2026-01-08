@@ -1,48 +1,41 @@
-import { Button } from "@workspace/ui/components/button";
+import { forwardRef } from "react";
 import { cn } from "@workspace/ui/lib/utils";
 import { LoaderIcon } from "lucide-react";
 
 interface InfiniteScrollTriggerProps {
-  canLoadMore: boolean;
   isLoadingMore: boolean;
-  onLoadMore: () => void;
-  loadMoreText?: string;
+  canLoadMore: boolean;
   noMoreText?: string;
   className?: string;
-  ref?: React.Ref<HTMLDivElement>;
 }
 
-export const InfiniteScrollTrigger = ({
-  canLoadMore,
-  isLoadingMore,
-  onLoadMore,
-  loadMoreText = "Load More",
-  noMoreText = "No more items",
-  className,
-  ref,
-}: InfiniteScrollTriggerProps) => {
-  let text = loadMoreText;
-
-  if (isLoadingMore) {
+/**
+ * Sentry component for infinite scroll
+ * This component should always be mounted when infinite scroll is active
+ */
+export const InfiniteScrollTrigger = forwardRef<
+  HTMLDivElement,
+  InfiniteScrollTriggerProps
+>(
+  (
+    { isLoadingMore, canLoadMore, noMoreText = "No more items", className },
+    ref
+  ) => {
+    // Always render to keep the observer active
     return (
-      <div className="w-full flex items-center justify-center">
-        <LoaderIcon className="size-4 animate-spin" />
+      <div
+        ref={ref}
+        className={cn("flex w-full justify-center py-4", className)}
+      >
+        {isLoadingMore && (
+          <LoaderIcon className="size-4 animate-spin text-muted-foreground" />
+        )}
+        {!isLoadingMore && !canLoadMore && noMoreText && (
+          <p className="text-xs text-muted-foreground">{noMoreText}</p>
+        )}
       </div>
     );
-  } else if (!canLoadMore) {
-    text = noMoreText;
   }
+);
 
-  return (
-    <div className={cn("flex w-full justify-center py-2", className)} ref={ref}>
-      <Button
-        disabled={!canLoadMore || isLoadingMore}
-        onClick={onLoadMore}
-        size="sm"
-        variant="ghost"
-      >
-        {text}
-      </Button>
-    </div>
-  );
-};
+InfiniteScrollTrigger.displayName = "InfiniteScrollTrigger";
