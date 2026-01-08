@@ -1,5 +1,6 @@
 import { Button } from "@workspace/ui/components/button";
 import { cn } from "@workspace/ui/lib/utils";
+import { LoaderIcon } from "lucide-react";
 
 interface InfiniteScrollTriggerProps {
   canLoadMore: boolean;
@@ -23,7 +24,11 @@ export const InfiniteScrollTrigger = ({
   let text = loadMoreText;
 
   if (isLoadingMore) {
-    text = "Loading...";
+    return (
+      <div className="w-full flex items-center justify-center">
+        <LoaderIcon className="size-4 animate-spin" />
+      </div>
+    );
   } else if (!canLoadMore) {
     text = noMoreText;
   }

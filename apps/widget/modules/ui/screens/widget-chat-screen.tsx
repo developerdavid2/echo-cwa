@@ -43,6 +43,7 @@ import { Form, FormField } from "@workspace/ui/components/form";
 import { useInfiniteScroll } from "@workspace/ui/hooks/use-infinite-scroll";
 import { InfiniteScrollTrigger } from "@workspace/ui/components/infinite-scroll-trigger";
 import { DicebearAvatar } from "./../../../../../packages/ui/src/components/dicebear-avatar";
+import { AIMessageSkeleton } from "./../../../../../packages/ui/src/components/ai/chat-message-skeleton";
 
 const formSchema = z.object({
   message: z.string().min(1, "Message is required"),
@@ -63,7 +64,7 @@ export const WidgetChatScreen = () => {
 
   const onBack = () => {
     setConversationId(null);
-    setScreen("selection");
+    setScreen("inbox");
   };
 
   const conversation = useQuery(
@@ -129,7 +130,7 @@ export const WidgetChatScreen = () => {
           <MenuIcon />
         </Button>
       </WidgetHeader>
-      <AIConversation>
+      <AIConversation className="mt-20 pb-30">
         <AIConversationContent>
           <InfiniteScrollTrigger
             canLoadMore={canLoadMore}
@@ -137,8 +138,22 @@ export const WidgetChatScreen = () => {
             onLoadMore={handleLoadMore}
             ref={topElementRef}
           />
-          {toUIMessages(messages.results ?? [])?.map((message) => {
-            return (
+
+          {/* Initial loading: show 6-8 skeleton messages */}
+          {messages.status === "LoadingFirstPage" && (
+            <>
+              {Array.from({ length: 7 }).map((_, i) => (
+                <AIMessageSkeleton
+                  key={`skeleton-${i}`}
+                  from={i % 2 === 0 ? "assistant" : "user"} // alternate sides for realism
+                />
+              ))}
+            </>
+          )}
+
+          {/* Loaded messages */}
+          {messages.status !== "LoadingFirstPage" &&
+            toUIMessages(messages.results ?? [])?.map((message) => (
               <AIMessage
                 from={message.role === "user" ? "user" : "assistant"}
                 key={message.id}
@@ -146,32 +161,34 @@ export const WidgetChatScreen = () => {
                 <AIMessageContent>
                   <AIResponse>{message.content}</AIResponse>
                 </AIMessageContent>
-                {/*TODO: Add Avatar component for each role  */}
+
                 {message?.role === "assistant" && (
                   <DicebearAvatar
                     imageUrl="/logo.svg"
                     seed="assistant"
                     size={32}
-                    // badgeImageUrl="/logo.svg"
                   />
                 )}
                 {message?.role === "user" && (
-                  <DicebearAvatar
-                    // imageUrl="/logo.svg"
-                    seed="assistant"
-                    size={32}
-                    // badgeImageUrl="/logo.svg"
-                  />
+                  <DicebearAvatar seed="user" size={32} />
                 )}
               </AIMessage>
-            );
-          })}
+            ))}
+
+          {/* Loading more older messages */}
+          {isLoadingMore && (
+            <>
+              {Array.from({ length: 3 }).map((_, i) => (
+                <AIMessageSkeleton key={`loading-more-${i}`} from="assistant" />
+              ))}
+            </>
+          )}
         </AIConversationContent>
       </AIConversation>
       {/* TODO: Add Ssuggestion */}
       <Form {...form}>
         <AIInput
-          className="rounded-none border-x-0 border-b-0"
+          className="rounded-none border-x-0 border-b-0 fixed w-full bottom-0"
           onSubmit={form.handleSubmit(onSubmit)}
         >
           <FormField

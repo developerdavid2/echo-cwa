@@ -18,6 +18,7 @@ import { Button } from "@workspace/ui/components/button";
 import { useMutation } from "convex/react";
 import { api } from "@workspace/backend/_generated/api";
 import { useState } from "react";
+import { WidgetFooter } from "../components/widget-footer";
 
 export const WidgetSelectionScreen = () => {
   const [isPending, setIsPending] = useState(false);
@@ -66,7 +67,7 @@ export const WidgetSelectionScreen = () => {
           <p className="text-lg">Let&apos;s get you started</p>
         </div>
       </WidgetHeader>
-      <div className="flex flex-1 flex-col  gap-y-4 p-4 overflow-y-auto ">
+      <div className="flex flex-1 flex-col  gap-y-4 p-4 overflow-y-auto mt-38">
         <Button
           className="h-16 w-full justify-between"
           variant="outline"
@@ -80,6 +81,7 @@ export const WidgetSelectionScreen = () => {
           <ChevronRightIcon />
         </Button>
       </div>
+      <WidgetFooter />
     </>
   );
 };
