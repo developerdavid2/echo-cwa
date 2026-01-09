@@ -7,18 +7,14 @@ import {
   organizationIdAtom,
   screenAtom,
 } from "@/modules/widget/atoms/widget-atoms";
-import { useAtomValue, useSetAtom } from "jotai";
-import {
-  AlertTriangleIcon,
-  ChevronRightIcon,
-  MessageSquareTextIcon,
-} from "lucide-react";
-import { WidgetHeader } from "../components/widget-header";
+import { api } from "@workspace/backend/_generated/api";
 import { Button } from "@workspace/ui/components/button";
 import { useMutation } from "convex/react";
-import { api } from "@workspace/backend/_generated/api";
+import { useAtomValue, useSetAtom } from "jotai";
+import { ChevronRightIcon, MessageSquareTextIcon } from "lucide-react";
 import { useState } from "react";
 import { WidgetFooter } from "../components/widget-footer";
+import { WidgetHeader } from "../components/widget-header";
 
 export const WidgetSelectionScreen = () => {
   const [isPending, setIsPending] = useState(false);
