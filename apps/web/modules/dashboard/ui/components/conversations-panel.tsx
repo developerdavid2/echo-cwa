@@ -121,7 +121,7 @@ export const ConversationsPanel = () => {
                     pathname === `/conversations/${conversation._id}` &&
                       "bg-accent text-accent-foreground"
                   )}
-                  href={`conversation/${conversation._id}`}
+                  href={`/conversations/${conversation._id}`}
                 >
                   <div
                     className={cn(
