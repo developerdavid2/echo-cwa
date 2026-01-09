@@ -25,7 +25,7 @@ export const InfiniteScrollTrigger = ({
 
   if (isLoadingMore) {
     return (
-      <div className="w-full flex items-center justify-center">
+      <div className="w-full flex items-center justify-center mt-4">
         <LoaderIcon className="size-4 animate-spin" />
       </div>
     );
