@@ -130,7 +130,7 @@ export const WidgetChatScreen = () => {
           <MenuIcon />
         </Button>
       </WidgetHeader>
-      <AIConversation className="mt-20 pb-30">
+      <AIConversation className="max-h-[calc(100vh-180px)] mt-20">
         <AIConversationContent>
           <InfiniteScrollTrigger
             canLoadMore={canLoadMore}
@@ -164,13 +164,26 @@ export const WidgetChatScreen = () => {
 
                 {message?.role === "assistant" && (
                   <DicebearAvatar
-                    imageUrl="/logo.svg"
-                    seed="assistant"
+                    imageUrl={
+                      conversation?.status === "escalated" ||
+                      conversation?.status === "resolved"
+                        ? ""
+                        : "/logo.svg"
+                    }
+                    seed={
+                      conversation?.status === "escalated" ||
+                      conversation?.status === "resolved"
+                        ? "user"
+                        : "assistant"
+                    }
                     size={32}
+                    badgeImageUrl={
+                      conversation?.status === "escalated" ||
+                      conversation?.status === "resolved"
+                        ? "/logo.svg"
+                        : ""
+                    }
                   />
-                )}
-                {message?.role === "user" && (
-                  <DicebearAvatar seed="user" size={32} />
                 )}
               </AIMessage>
             ))}
@@ -184,6 +197,7 @@ export const WidgetChatScreen = () => {
             </>
           )}
         </AIConversationContent>
+        <AIConversationScrollButton />
       </AIConversation>
       {/* TODO: Add Ssuggestion */}
       <Form {...form}>

@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@clerk/nextjs": "^6.10.3",
+    "@convex-dev/agent": "0.1.18",
     "@hookform/resolvers": "catalog:",
     "@sentry/nextjs": "^10.32.1",
     "@tailwindcss/postcss": "catalog:",

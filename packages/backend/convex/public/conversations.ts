@@ -117,8 +117,8 @@ export const getOne = query({
 
     if (!conversation) {
       throw new ConvexError({
-        code: "UNAUTHORIZED",
-        message: "Incorrect session",
+        code: "NOT_FOUND",
+        message: "Contact session not found",
       });
     }
 
