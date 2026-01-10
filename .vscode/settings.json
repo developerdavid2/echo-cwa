@@ -1,3 +1,9 @@
 {
-  "tailwindCSS.experimental.configFile": "packages/ui/src/styles/globals.css"
+  "editor.quickSuggestions": {
+    "strings": "on"
+  },
+  "editor.suggest.showWords": false,
+  "tailwindCSS.suggestions": true,
+  "tailwindCSS.validate": true,
+  "tailwindCSS.classAttributes": ["class", "className", ".*[cC]lassName.*"]
 }

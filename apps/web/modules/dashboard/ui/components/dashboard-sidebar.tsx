@@ -9,6 +9,7 @@ import {
   PaletteIcon,
 } from "lucide-react";
 
+import { OrganizationSwitcher, UserButton } from "@clerk/nextjs";
 import {
   Sidebar,
   SidebarContent,
@@ -22,11 +23,9 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from "@workspace/ui/components/sidebar";
-import { OrganizationSwitcher, UserButton } from "@clerk/nextjs";
-import { usePathname } from "next/navigation";
-import Link from "next/link";
 import { cn } from "@workspace/ui/lib/utils";
-import { SelectScrollable } from "./conversation-test";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 const customerSupportItems = [
   {

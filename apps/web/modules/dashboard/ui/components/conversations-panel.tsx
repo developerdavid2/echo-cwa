@@ -39,7 +39,7 @@ export const ConversationsPanel = () => {
       status: statusFilter === "all" ? undefined : statusFilter,
     },
     {
-      initialNumItems: 5,
+      initialNumItems: 10,
     }
   );
 
@@ -52,8 +52,7 @@ export const ConversationsPanel = () => {
   } = useInfiniteScroll({
     status: conversations.status,
     loadMore: conversations.loadMore,
-    loadSize: 5,
-    observerEnabled: false,
+    loadSize: 10,
   });
   return (
     <div className="flex h-full w-full flex-col bg-background text-sidebar-foreground">
