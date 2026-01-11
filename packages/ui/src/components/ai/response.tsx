@@ -1,10 +1,10 @@
 "use client";
 
+import { cn } from "@workspace/ui/lib/utils";
 import type { HTMLAttributes } from "react";
 import { memo } from "react";
 import ReactMarkdown, { type Options } from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { cn } from "@workspace/ui/lib/utils";
 
 export type AIResponseProps = HTMLAttributes<HTMLDivElement> & {
   options?: Options;
@@ -88,7 +88,7 @@ export const AIResponse = memo(
     <div
       className={cn(
         "size-full [&>*:first-child]:mt-0 [&>*:last-child]:mb-0",
-        className,
+        className
       )}
       {...props}
     >
@@ -101,7 +101,7 @@ export const AIResponse = memo(
       </ReactMarkdown>
     </div>
   ),
-  (prevProps, nextProps) => prevProps.children === nextProps.children,
+  (prevProps, nextProps) => prevProps.children === nextProps.children
 );
 
 AIResponse.displayName = "AIResponse";

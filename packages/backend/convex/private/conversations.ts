@@ -1,10 +1,9 @@
-import { ConvexError, v } from "convex/values";
-import { mutation, query } from "../_generated/server";
-import { MessageDoc, saveMessage } from "@convex-dev/agent";
-import { components } from "../_generated/api";
+import { MessageDoc } from "@convex-dev/agent";
 import { paginationOptsValidator, PaginationResult } from "convex/server";
-import { supportAgent } from "./../system/ai/agents/supportAgent";
+import { ConvexError, v } from "convex/values";
 import { Doc } from "../_generated/dataModel";
+import { mutation, query } from "../_generated/server";
+import { supportAgent } from "./../system/ai/agents/supportAgent";
 
 export const updateStatus = mutation({
   args: {
