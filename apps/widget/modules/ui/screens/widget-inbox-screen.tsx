@@ -14,10 +14,10 @@ import { WidgetHeader } from "../components/widget-header";
 import { usePaginatedQuery } from "convex/react";
 import { api } from "@workspace/backend/_generated/api";
 import { formatDistanceToNow } from "date-fns";
-import { ConversationStatusIcon } from "./../../../../../packages/ui/src/components/conversation-status-icon";
+import { ConversationStatusIcon } from "@workspace/ui/components/conversation-status-icon";
 import { useInfiniteScroll } from "@workspace/ui/hooks/use-infinite-scroll";
 import { InfiniteScrollTrigger } from "@workspace/ui/components/infinite-scroll-trigger";
-import { ConversationSkeleton } from "./../../../../../packages/ui/src/components/conversation-skeleton";
+import { ConversationSkeleton } from "@workspace/ui/components/conversation-skeleton";
 import Image from "next/image";
 export const WidgetInboxScreen = () => {
   const setScreen = useSetAtom(screenAtom);
@@ -40,9 +40,7 @@ export const WidgetInboxScreen = () => {
     });
 
   const isInitialLoading = conversations.status === "LoadingFirstPage";
-  const isLoadingMoreConversation = conversations.status === "LoadingMore";
 
-  // Show 6-8 skeleton items during initial load
   const skeletonCount = 6;
 
   return (

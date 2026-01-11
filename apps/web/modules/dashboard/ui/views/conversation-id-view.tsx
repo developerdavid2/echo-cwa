@@ -44,6 +44,7 @@ const formSchema = z.object({
 });
 
 type FormSchema = z.infer<typeof formSchema>;
+
 export const ConversationIdView = ({
   conversationId,
 }: {
@@ -101,10 +102,14 @@ export const ConversationIdView = ({
       form.setValue("message", response);
     } catch (error) {
       console.error(error);
+    } finally {
+      // Reset enhancing state after enhancement is complete
+      setIsEnhancing(false);
     }
   };
 
   const createMessage = useMutation(api.private.messages.create);
+
   const onSubmit = async (values: FormSchema) => {
     if (!conversation) return;
 
@@ -117,8 +122,6 @@ export const ConversationIdView = ({
       form.reset({ message: "" });
     } catch (error) {
       console.error(error);
-    } finally {
-      setIsEnhancing(false);
     }
   };
 
@@ -180,34 +183,44 @@ export const ConversationIdView = ({
             isLoadingMore={isLoadingMore}
             onLoadMore={handleLoadMore}
             ref={topElementRef}
+            noMoreText=""
           />
-          {toUIMessages(messages.results ?? [])?.map((message) => (
-            <AIMessage
-              // In reverse, because we are watching from "assitant" perspective
-              from={message.role === "user" ? "assistant" : "user"}
-              key={message.id}
-            >
-              <AIMessageContent>
-                <AIResponse>{message.content}</AIResponse>
-              </AIMessageContent>
-              {message.role === "user" && (
-                <DicebearAvatar
-                  seed={conversation?.contactSessionId ?? ""}
-                  size={32}
-                />
-              )}
-            </AIMessage>
-          ))}
+          {toUIMessages(messages.results ?? [])?.map((message) => {
+            // Find the original message to get _creationTime
+            const originalMessage = messages.results?.find(
+              (m) => m._id === message.id
+            );
+            const messageFrom = message.role === "user" ? "assistant" : "user";
+
+            return (
+              <AIMessage
+                // In reverse, because we are watching from "assistant" perspective
+                from={messageFrom}
+                key={message.id}
+                timestamp={originalMessage?._creationTime}
+              >
+                <AIMessageContent
+                  timestamp={originalMessage?._creationTime}
+                  from={messageFrom}
+                >
+                  <AIResponse>{message.content}</AIResponse>
+                </AIMessageContent>
+                {message.role === "user" && (
+                  <DicebearAvatar
+                    seed={conversation?.contactSessionId ?? ""}
+                    size={32}
+                  />
+                )}
+              </AIMessage>
+            );
+          })}
         </AIConversationContent>
         <AIConversationScrollButton />
       </AIConversation>
 
       <div className="p-2">
         <Form {...form}>
-          <AIInput
-            // className="rounded-none border-x-0 border-b-0 fixed w-full bottom-0"
-            onSubmit={form.handleSubmit(onSubmit)}
-          >
+          <AIInput onSubmit={form.handleSubmit(onSubmit)}>
             <FormField
               control={form.control}
               disabled={conversation?.status === "resolved"}
@@ -218,8 +231,8 @@ export const ConversationIdView = ({
                   value={field.value}
                   disabled={
                     conversation?.status === "resolved" ||
-                    form.formState.isSubmitting
-                    // TODO: or if enhancing prompt
+                    form.formState.isSubmitting ||
+                    isEnhancing
                   }
                   placeholder={
                     conversation?.status === "resolved"
@@ -247,16 +260,16 @@ export const ConversationIdView = ({
                     !form.formState.isValid
                   }
                 >
-                  <Wand2Icon /> {isEnhancing ? "Enhancing..." : "Enhance"}
+                  <Wand2Icon className={cn(isEnhancing && "animate-spin")} />
+                  {isEnhancing ? "Enhancing..." : "Enhance"}
                 </AIInputButton>
               </AIInputTools>
               <AIInputSubmit
                 disabled={
                   conversation?.status === "resolved" ||
                   !form.formState.isValid ||
-                  form.formState.isSubmitting
-
-                  // OR if is enhancing prompt
+                  form.formState.isSubmitting ||
+                  isEnhancing
                 }
                 status="ready"
                 type="submit"

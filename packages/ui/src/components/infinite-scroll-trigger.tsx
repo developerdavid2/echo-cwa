@@ -5,7 +5,7 @@ import { LoaderIcon } from "lucide-react";
 interface InfiniteScrollTriggerProps {
   canLoadMore: boolean;
   isLoadingMore: boolean;
-  onLoadMore: () => void;
+  onLoadMore?: () => void;
   loadMoreText?: string;
   noMoreText?: string;
   className?: string;

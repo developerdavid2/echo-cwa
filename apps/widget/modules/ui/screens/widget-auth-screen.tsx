@@ -13,7 +13,7 @@ import { Button } from "@workspace/ui/components/button";
 import { Input } from "@workspace/ui/components/input";
 import { WidgetHeader } from "../components/widget-header";
 import { useMutation } from "convex/react";
-import { api } from "./../../../../../packages/backend/convex/_generated/api";
+import { api } from "@workspace/backend/_generated/api";
 import { Doc } from "@workspace/backend/_generated/dataModel";
 import { useAtomValue, useSetAtom } from "jotai";
 import {

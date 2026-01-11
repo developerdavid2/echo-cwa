@@ -1,5 +1,5 @@
 import { Doc } from "@workspace/backend/_generated/dataModel";
-import { Hint } from "./../../../../../../packages/ui/src/components/hint";
+import { Hint } from "@workspace/ui/components/hint";
 import { Button } from "@workspace/ui/components/button";
 import { ArrowRightIcon, ArrowUpIcon, CheckIcon } from "lucide-react";
 
