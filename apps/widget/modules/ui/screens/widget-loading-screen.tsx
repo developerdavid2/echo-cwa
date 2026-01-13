@@ -40,78 +40,80 @@ export const WidgetLoadingScreen = ({
 
   // Validation for the step if there is an organization ID
   useEffect(() => {
-    if (step !== "org") {
-      return;
-    }
+    // Early return if not in the right step
+    if (step !== "org") return;
 
-    setLoadingMessage("Finding organization ID ...");
+    // We can't make useEffect async directly, so we use an IIFE (Immediately Invoked Function Expression)
+    (async () => {
+      setLoadingMessage("Finding organization ID ...");
 
-    if (!organizationId) {
-      setErrorMessage("Organization ID is required");
-      setScreen("error");
-      return;
-    }
-    setLoadingMessage("Verifying organization...");
+      if (!organizationId) {
+        setErrorMessage("Organization ID is required");
+        setScreen("error");
+        return;
+      }
 
-    validateOrganization({ organizationId })
-      .then((result) => {
+      setLoadingMessage("Verifying organization...");
+
+      try {
+        const result = await validateOrganization({ organizationId });
+
         if (result.valid === true) {
           setOrganizationId(organizationId);
           setStep("session");
         } else {
           setErrorMessage(result.reason || "Invalid configuration");
-
           setScreen("error");
         }
-      })
-      .catch(() => {
+      } catch {
         setErrorMessage("Unable to verify organization");
-
         setScreen("error");
-      });
+      }
+    })();
   }, [
     step,
     organizationId,
+    validateOrganization,
+    setLoadingMessage,
     setErrorMessage,
     setScreen,
-    setLoadingMessage,
-    validateOrganization,
     setOrganizationId,
   ]);
-
   // Step 2: Validate session if exists
   const validateContactSession = useMutation(
     api.public.contactSession.validate
   );
+
   useEffect(() => {
     if (step !== "session") {
       return;
     }
 
-    setLoadingMessage("Finding contact session ID");
+    // Async IIFE
+    (async () => {
+      setLoadingMessage("Finding contact session ID");
 
-    if (!contactSessionId) {
-      setSessionValid(false);
-      setStep("done");
-
-      return;
-    }
-
-    setLoadingMessage("Validating session...");
-
-    validateContactSession({
-      contactSessionId: contactSessionId as Id<"contactSessions">,
-    })
-      .then((result) => {
-        setSessionValid(result.valid);
-        setStep("done");
-      })
-      .catch(() => {
+      if (!contactSessionId) {
         setSessionValid(false);
         setStep("done");
-      });
-  }, [contactSessionId, setLoadingMessage, step, validateContactSession]);
+        return;
+      }
 
+      setLoadingMessage("Validating session...");
+
+      try {
+        const result = await validateContactSession({
+          contactSessionId: contactSessionId as Id<"contactSessions">,
+        });
+
+        setSessionValid(result.valid);
+        setStep("done");
+      } catch {
+        setSessionValid(false);
+        setStep("done");
+      }
+    })();
+  }, [step, contactSessionId, validateContactSession, setLoadingMessage]);
   useEffect(() => {
     if (step !== "done") {
       return;
