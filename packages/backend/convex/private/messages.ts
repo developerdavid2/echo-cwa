@@ -81,6 +81,12 @@ export const create = mutation({
       });
     }
 
+    if (conversation.organizationId !== orgId) {
+      throw new ConvexError({
+        code: "UNAUTHORIZED",
+        message: "Invalid Organization ID",
+      });
+    }
     if (conversation.status === "resolved") {
       throw new ConvexError({
         code: "BAD_REQUEST",
@@ -88,10 +94,9 @@ export const create = mutation({
       });
     }
 
-    if (conversation.organizationId !== orgId) {
-      throw new ConvexError({
-        code: "UNAUTHORIZED",
-        message: "Organization not found",
+    if (conversation.status === "unresolved") {
+      await ctx.db.patch(args.conversationId, {
+        status: "escalated",
       });
     }
 
