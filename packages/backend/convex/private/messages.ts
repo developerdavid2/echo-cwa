@@ -6,6 +6,7 @@ import { action, mutation, query } from "../_generated/server";
 import { supportAgent } from "../system/ai/agents/supportAgent";
 import { generateText } from "ai";
 import { groq } from "@ai-sdk/groq";
+import { cohere } from "@ai-sdk/cohere";
 
 export const enhanceResponse = action({
   args: {
@@ -35,7 +36,7 @@ export const enhanceResponse = action({
         {
           role: "system",
           content:
-            "Enhance the operator's message to be more professional, clear, and helpful while maintaining their intent and key information. ",
+            "Enhance the operator's message to be more professional, clear, and helpful while maintaining intent. You don't need to explain what you are doing, just provide the enhanced message.",
         },
         {
           role: "user",

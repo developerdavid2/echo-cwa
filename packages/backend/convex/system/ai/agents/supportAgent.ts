@@ -1,9 +1,10 @@
-import { groq } from "@ai-sdk/groq";
+import { cohere } from "@ai-sdk/cohere";
 import { Agent } from "@convex-dev/agent";
 import { components } from "../../../_generated/api";
 
 export const supportAgent = new Agent(components.agent, {
-  chat: groq("llama-3.1-8b-instant"),
+  // chat: groq("llama-3.1-8b-instant"),
+  chat: cohere("command-a-03-2025"),
   instructions: `You are a very patient and helpful customer support agent. ALWAYS try to solve the problem yourself first with empathy and clear steps. 
 
 Use "escalateConversation" tool if:
