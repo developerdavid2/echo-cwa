@@ -95,17 +95,17 @@ export const getMany = query({
         return result.value;
       }
 
-      const originalConversation = conversations.page[index];
+      const original = conversations.page[index]!; // ← safe assertion
+
       return {
-        _id: originalConversation._id,
-        _creationTime: originalConversation._creationTime,
-        status: originalConversation.status,
-        organizationId: originalConversation.organizationId,
-        threadId: originalConversation.threadId,
+        _id: original._id,
+        _creationTime: original._creationTime,
+        status: original.status,
+        organizationId: original.organizationId,
+        threadId: original.threadId,
         lastMessage: null,
       };
     });
-
     return {
       ...conversations,
       page: conversationsWithLastMessage,
