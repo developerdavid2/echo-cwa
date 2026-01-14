@@ -99,6 +99,7 @@ const ChatContent = ({
               const messageFrom =
                 message.role === "user" ? "user" : "assistant";
 
+              console.log(message);
               return (
                 <AIMessage
                   from={messageFrom}

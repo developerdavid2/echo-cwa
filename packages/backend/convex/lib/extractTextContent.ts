@@ -65,7 +65,7 @@ async function extractTextFileContent(
     bytes || (await (await ctx.storage.get(storageId))?.arrayBuffer());
 
   if (!arrayBuffer) {
-    throw new Error("Failed to gett file content");
+    throw new Error("Failed to get file content");
   }
 
   const text = new TextDecoder().decode(arrayBuffer);
