@@ -16,7 +16,7 @@ export const create = mutation({
     if (!contactSession || contactSession.expiresAt < Date.now()) {
       throw new ConvexError({
         code: "UNAUTHORIZED",
-        message: "invalid session ",
+        message: "Invalid session ",
       });
     }
 
@@ -28,7 +28,6 @@ export const create = mutation({
       threadId,
       message: {
         role: "assistant",
-        //TODO: Later modi
         content: "Hello, how can I help you today",
       },
     });
@@ -55,7 +54,7 @@ export const getMany = query({
     if (!contactSession || contactSession.expiresAt < Date.now()) {
       throw new ConvexError({
         code: "UNAUTHORIZED",
-        message: "invalid session ",
+        message: "invalid session",
       });
     }
 
@@ -67,18 +66,18 @@ export const getMany = query({
       .order("desc")
       .paginate(args.paginationOpts);
 
-    const conversationsWithLastMessage = await Promise.all(
+    // Use Promise.allSettled → we get results even when some promises reject
+    const settledResults = await Promise.allSettled(
       conversations.page.map(async (conversation) => {
-        let lastMessage: MessageDoc | null = null;
         const messages = await supportAgent.listMessages(ctx, {
           threadId: conversation.threadId,
           paginationOpts: { numItems: 1, cursor: null },
         });
 
-        if (messages.page.length > 0) {
-          lastMessage = messages.page[0] ?? null;
-        }
+        const lastMessage =
+          messages.page.length > 0 ? (messages.page[0] ?? null) : null;
 
+        // We return exactly the same shape the public API expects
         return {
           _id: conversation._id,
           _creationTime: conversation._creationTime,
@@ -89,6 +88,23 @@ export const getMany = query({
         };
       })
     );
+
+    // Map settled results back to the original order + fallback for failures
+    const conversationsWithLastMessage = settledResults.map((result, index) => {
+      if (result.status === "fulfilled") {
+        return result.value;
+      }
+
+      const originalConversation = conversations.page[index];
+      return {
+        _id: originalConversation._id,
+        _creationTime: originalConversation._creationTime,
+        status: originalConversation.status,
+        organizationId: originalConversation.organizationId,
+        threadId: originalConversation.threadId,
+        lastMessage: null,
+      };
+    });
 
     return {
       ...conversations,
@@ -118,14 +134,14 @@ export const getOne = query({
     if (!conversation) {
       throw new ConvexError({
         code: "NOT_FOUND",
-        message: "Contact session not found",
+        message: "Conversation not found",
       });
     }
 
     if (conversation.contactSessionId !== args.contactSessionId) {
       throw new ConvexError({
         code: "UNAUTHORIZED",
-        message: "Incorrect session",
+        message: "Incorrect session ID",
       });
     }
 

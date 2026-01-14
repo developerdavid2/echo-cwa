@@ -114,6 +114,7 @@ export const WidgetLoadingScreen = ({
       }
     })();
   }, [step, contactSessionId, validateContactSession, setLoadingMessage]);
+
   useEffect(() => {
     if (step !== "done") {
       return;
