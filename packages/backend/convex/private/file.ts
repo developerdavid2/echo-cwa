@@ -62,7 +62,7 @@ export const addFile = action({
 
     const { entryId, created } = await rag.add(ctx, {
       //SUPER IMPORTANT: Make sure to set the namespace to orgId when adding files.  You cannot search across nnamesspaces
-      // If nt added, it will go to the default namespace which is not what we want
+      // If not added, it will go to the default namespace which is not what we want
       namespace: orgId,
       text,
       key: filename,
@@ -124,7 +124,7 @@ export const deleteFile = mutation({
     }
 
     const entry = await rag.getEntry(ctx, {
-      entryId: args.entryId,
+      entryId,
     });
 
     if (!entry) {
@@ -146,7 +146,7 @@ export const deleteFile = mutation({
     }
 
     await rag.deleteAsync(ctx, {
-      entryId: args.entryId,
+      entryId,
     });
   },
 });

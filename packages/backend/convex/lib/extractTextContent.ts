@@ -21,7 +21,7 @@ const SYSTEM_PROMPTS = {
   image:
     "You turn images into text. If it is a photo of a document, transcribe it. If it is not a document, describe it.",
   pdf: "you transfrom PDF files into text",
-  html: "You trandorm content into markdown",
+  html: "You tranform content into markdown",
 };
 
 export type ExtracTextContentArgs = {
