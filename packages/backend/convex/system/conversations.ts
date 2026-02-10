@@ -43,7 +43,7 @@ export const escalate = internalMutation({
   },
 });
 
-export const getByThread = internalQuery({
+export const getByThreadId = internalQuery({
   args: {
     threadId: v.string(),
   },
