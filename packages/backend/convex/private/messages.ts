@@ -7,6 +7,7 @@ import { supportAgent } from "../system/ai/agents/supportAgent";
 import { generateText } from "ai";
 import { groq } from "@ai-sdk/groq";
 import { cohere } from "@ai-sdk/cohere";
+import { OPERATOR_MESSAGE_ENHANCEMENT_PROMPT } from "../system/ai/constants";
 
 export const enhanceResponse = action({
   args: {
@@ -35,8 +36,7 @@ export const enhanceResponse = action({
       messages: [
         {
           role: "system",
-          content:
-            "Enhance the operator's message to be more professional, clear, and helpful while maintaining intent. You don't need to explain what you are doing, just provide the enhanced message.",
+          content: OPERATOR_MESSAGE_ENHANCEMENT_PROMPT,
         },
         {
           role: "user",

@@ -176,7 +176,7 @@ export const FilesView = () => {
               <div className="border-t">
                 <InfiniteScrollTrigger
                   canLoadMore={canLoadMore}
-                  isLoadingMore
+                  isLoadingMore={isLoadingMore}
                   onLoadMore={handleLoadMore}
                   ref={topElementRef}
                 />
