@@ -14,6 +14,7 @@ import {
   FormControl,
   FormField,
   FormItem,
+  FormMessage,
 } from "@workspace/ui/components/form";
 import { Input } from "@workspace/ui/components/input";
 import { Label } from "@workspace/ui/components/label";
@@ -60,7 +61,7 @@ export const VapiPluginForm = ({
       toast.success("Vapi secret created");
     } catch (error) {
       console.error(error);
-      toast.error("SOmething went wrong");
+      toast.error("Something went wrong");
     }
   };
 
@@ -93,6 +94,7 @@ export const VapiPluginForm = ({
                       type="password"
                     />
                   </FormControl>
+                  <FormMessage />
                 </FormItem>
               )}
             />
@@ -109,6 +111,7 @@ export const VapiPluginForm = ({
                       type="password"
                     />
                   </FormControl>
+                  <FormMessage />
                 </FormItem>
               )}
             />

@@ -7,7 +7,10 @@ export const upsert = internalAction({
   args: {
     organizationId: v.string(),
     service: v.union(v.literal("vapi")),
-    value: v.any(),
+    value: v.object({
+      publicApiKey: v.string(),
+      privateApiKey: v.string(),
+    }),
   },
   handler: async (ctx, args) => {
     const secretName = `tenant/${args.organizationId}/${args.service}`;

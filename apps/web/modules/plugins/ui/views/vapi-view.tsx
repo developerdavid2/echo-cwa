@@ -38,7 +38,7 @@ const vapiFeatures: Feature[] = [
 export const VapiView = () => {
   const vapiPlugin = useQuery(api.private.plugins.getOne, { service: "vapi" });
 
-  const [connectOpen, setConnectOpen] = useState(true);
+  const [connectOpen, setConnectOpen] = useState(false);
   const [removeOpen, setRemoveOpen] = useState(false);
 
   const handleSubmit = () => {
