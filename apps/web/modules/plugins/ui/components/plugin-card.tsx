@@ -52,7 +52,7 @@ export const PluginCard = ({
       </div>
 
       <div className="mb-6 text-center">
-        <p className="text-lg">connect your {serviceName} account</p>
+        <p className="text-lg">Connect your {serviceName} account</p>
       </div>
 
       <div className="mb-6">

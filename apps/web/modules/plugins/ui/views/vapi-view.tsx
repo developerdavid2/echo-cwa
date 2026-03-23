@@ -10,8 +10,10 @@ import { Feature, PluginCard } from "../components/plugin-card";
 import { useQuery } from "convex/react";
 import { api } from "@workspace/backend/_generated/api";
 import { useState } from "react";
-import { toast } from "sonner";
 import { VapiPluginForm } from "../components/vapi-form";
+import { VapiConnectView } from "../components/vapi-connected-view";
+import { VapiPluginRemoveForm } from "../components/vapi-remove-form";
+import { Skeleton } from "@workspace/ui/components/skeleton";
 const vapiFeatures: Feature[] = [
   {
     icon: GlobeIcon,
@@ -41,7 +43,7 @@ export const VapiView = () => {
   const [connectOpen, setConnectOpen] = useState(false);
   const [removeOpen, setRemoveOpen] = useState(false);
 
-  const handleSubmit = () => {
+  const toggleConnection = () => {
     if (vapiPlugin) {
       setRemoveOpen(true);
     } else {
@@ -51,6 +53,7 @@ export const VapiView = () => {
   return (
     <>
       <VapiPluginForm open={connectOpen} setOpen={setConnectOpen} />
+      <VapiPluginRemoveForm open={removeOpen} setOpen={setRemoveOpen} />
       <div className="flex min-h-screen flex-col bg-muted p-8">
         <div className="mx-auto w-full max-w-3xl">
           <div className="space-y-2">
@@ -60,15 +63,24 @@ export const VapiView = () => {
             </p>
 
             <div className="mt-8">
-              {vapiPlugin ? (
-                <p>Connected</p>
+              {vapiPlugin === undefined ? (
+                <div className="h-fit w-full rounded-lg border bg-background p-8">
+                  <div className="space-y-4">
+                    <Skeleton className="h-6 w-48" />
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-5/6" />
+                    <Skeleton className="h-10 w-full" />
+                  </div>
+                </div>
+              ) : vapiPlugin ? (
+                <VapiConnectView onDisconnect={toggleConnection} />
               ) : (
                 <PluginCard
                   serviceImage="/vapi.jpg"
                   serviceName="Vapi"
                   features={vapiFeatures}
-                  isDisabled={vapiPlugin === undefined}
-                  onSubmit={handleSubmit}
+                  isDisabled={false}
+                  onSubmit={toggleConnection}
                 />
               )}
             </div>
