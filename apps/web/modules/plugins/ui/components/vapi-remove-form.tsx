@@ -9,8 +9,9 @@ import {
   DialogTitle,
 } from "@workspace/ui/components/dialog";
 import { useMutation } from "convex/react";
+import { useState } from "react";
 import { toast } from "sonner";
-import z from "zod";
+import { resetVapiDataCache } from "../../hooks/use-vapi-data";
 
 export const VapiPluginRemoveForm = ({
   open,
@@ -20,18 +21,25 @@ export const VapiPluginRemoveForm = ({
   setOpen: (values: boolean) => void;
 }) => {
   const removePlugin = useMutation(api.private.plugins.remove);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const onSubmit = async () => {
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
     try {
       await removePlugin({
         service: "vapi",
       });
 
+      resetVapiDataCache();
       setOpen(false);
       toast.success("Vapi plugin removed");
     } catch (error) {
       console.error(error);
       toast.error("Something went wrong");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -47,7 +55,12 @@ export const VapiPluginRemoveForm = ({
         </DialogDescription>
 
         <DialogFooter>
-          <Button onClick={onSubmit} variant="destructive">
+          <Button
+            aria-busy={isSubmitting}
+            disabled={isSubmitting}
+            onClick={onSubmit}
+            variant="destructive"
+          >
             Disconnect
           </Button>
         </DialogFooter>

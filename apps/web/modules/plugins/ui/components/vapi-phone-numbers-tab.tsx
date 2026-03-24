@@ -73,11 +73,15 @@ export const VapiPhoneNumbersTab = () => {
                   </div>
                 </TableCell>
                 <TableCell className="px-6 py-4">
-                  {phone.name || "Unanamed"}
+                  {phone.name || "Unnamed"}
                 </TableCell>
                 <TableCell className="px-6 py-4">
                   <Badge
-                    className="capitalize bg-emerald-500/10 text-emerald-700"
+                    className={
+                      phone.status === "active"
+                        ? "capitalize bg-emerald-500/10 text-emerald-700"
+                        : "capitalize"
+                    }
                     variant={
                       phone.status === "active" ? "default" : "destructive"
                     }

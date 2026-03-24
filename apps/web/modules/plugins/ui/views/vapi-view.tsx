@@ -6,14 +6,16 @@ import {
   PhoneIcon,
   WorkflowIcon,
 } from "lucide-react";
+import { useOrganization } from "@clerk/nextjs";
 import { Feature, PluginCard } from "../components/plugin-card";
 import { useQuery } from "convex/react";
 import { api } from "@workspace/backend/_generated/api";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { VapiPluginForm } from "../components/vapi-form";
 import { VapiConnectView } from "../components/vapi-connected-view";
 import { VapiPluginRemoveForm } from "../components/vapi-remove-form";
 import { Skeleton } from "@workspace/ui/components/skeleton";
+import { resetVapiDataCache } from "../../hooks/use-vapi-data";
 const vapiFeatures: Feature[] = [
   {
     icon: GlobeIcon,
@@ -38,10 +40,15 @@ const vapiFeatures: Feature[] = [
 ];
 
 export const VapiView = () => {
+  const { organization } = useOrganization();
   const vapiPlugin = useQuery(api.private.plugins.getOne, { service: "vapi" });
 
   const [connectOpen, setConnectOpen] = useState(false);
   const [removeOpen, setRemoveOpen] = useState(false);
+
+  useEffect(() => {
+    resetVapiDataCache();
+  }, [organization?.id]);
 
   const toggleConnection = () => {
     if (vapiPlugin) {

@@ -32,7 +32,7 @@ export const VapiConnectView = ({ onDisconnect }: VapiConnectedViewProps) => {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <div className="flex iteems-center justify-between">
+          <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <Image
                 alt="Vapi"

@@ -1,5 +1,8 @@
 import { api } from "@workspace/backend/_generated/api";
-import type { VapiAssistant, VapiPhoneNumber } from "@workspace/backend/types/vapi";
+import type {
+  VapiAssistant,
+  VapiPhoneNumber,
+} from "@workspace/backend/types/vapi";
 import { useAction } from "convex/react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -45,6 +48,11 @@ type AssistantsDTO = VapiAssistant[];
 type VapiAssistantsState = "idle" | "loading" | "error" | "success";
 let cachedAssistants: AssistantsDTO | null = null;
 
+export const resetVapiDataCache = () => {
+  cachedPhoneNumbers = null;
+  cachedAssistants = null;
+};
+
 export const useVapiAssistants = (): {
   data: AssistantsDTO;
   state: VapiAssistantsState;
@@ -68,7 +76,7 @@ export const useVapiAssistants = (): {
         setState("success");
       } catch {
         setState("error");
-        toast.error("Failed to fetch phone numbers");
+        toast.error("Failed to fetch assistants");
       }
     };
 
