@@ -68,29 +68,29 @@ export const VapiView = () => {
             <p className="text-muted-foreground">
               Connect Vapi to enable AI voice calls and phone support
             </p>
+          </div>
 
-            <div className="mt-8">
-              {vapiPlugin === undefined ? (
-                <div className="h-fit w-full rounded-lg border bg-background p-8">
-                  <div className="space-y-4">
-                    <Skeleton className="h-6 w-48" />
-                    <Skeleton className="h-4 w-full" />
-                    <Skeleton className="h-4 w-5/6" />
-                    <Skeleton className="h-10 w-full" />
-                  </div>
+          <div className="mt-8">
+            {vapiPlugin === undefined ? (
+              <div className="h-fit w-full rounded-lg border bg-background p-8">
+                <div className="space-y-4">
+                  <Skeleton className="h-6 w-48" />
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-5/6" />
+                  <Skeleton className="h-10 w-full" />
                 </div>
-              ) : vapiPlugin ? (
-                <VapiConnectView onDisconnect={toggleConnection} />
-              ) : (
-                <PluginCard
-                  serviceImage="/vapi.jpg"
-                  serviceName="Vapi"
-                  features={vapiFeatures}
-                  isDisabled={false}
-                  onSubmit={toggleConnection}
-                />
-              )}
-            </div>
+              </div>
+            ) : vapiPlugin ? (
+              <VapiConnectView onDisconnect={toggleConnection} />
+            ) : (
+              <PluginCard
+                serviceImage="/vapi.jpg"
+                serviceName="Vapi"
+                features={vapiFeatures}
+                isDisabled={false}
+                onSubmit={toggleConnection}
+              />
+            )}
           </div>
         </div>
       </div>

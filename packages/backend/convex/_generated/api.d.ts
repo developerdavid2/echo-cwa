@@ -8,6 +8,7 @@
  * @module
  */
 
+import type * as lib_auth from "../lib/auth.js";
 import type * as lib_extractTextContent from "../lib/extractTextContent.js";
 import type * as lib_secrets from "../lib/secrets.js";
 import type * as playground from "../playground.js";
@@ -17,6 +18,7 @@ import type * as private_messages from "../private/messages.js";
 import type * as private_plugins from "../private/plugins.js";
 import type * as private_secrets from "../private/secrets.js";
 import type * as private_vapi from "../private/vapi.js";
+import type * as private_widgetSettings from "../private/widgetSettings.js";
 import type * as public_contactSession from "../public/contactSession.js";
 import type * as public_conversations from "../public/conversations.js";
 import type * as public_messages from "../public/messages.js";
@@ -41,6 +43,7 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  "lib/auth": typeof lib_auth;
   "lib/extractTextContent": typeof lib_extractTextContent;
   "lib/secrets": typeof lib_secrets;
   playground: typeof playground;
@@ -50,6 +53,7 @@ declare const fullApi: ApiFromModules<{
   "private/plugins": typeof private_plugins;
   "private/secrets": typeof private_secrets;
   "private/vapi": typeof private_vapi;
+  "private/widgetSettings": typeof private_widgetSettings;
   "public/contactSession": typeof public_contactSession;
   "public/conversations": typeof public_conversations;
   "public/messages": typeof public_messages;

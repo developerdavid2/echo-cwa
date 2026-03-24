@@ -13,6 +13,7 @@ import { extractTextContent } from "../lib/extractTextContent";
 import rag from "../system/ai/rag";
 import { Id } from "../_generated/dataModel";
 import { paginationOptsValidator } from "convex/server";
+import { requireAuth } from "../lib/auth";
 
 function guessMimeType(filename: string, bytes: ArrayBuffer): string {
   return (
@@ -30,23 +31,7 @@ export const addFile = action({
     category: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-
-    if (identity == null) {
-      throw new ConvexError({
-        code: "UNAUTHORIZED",
-        message: "Identity not found",
-      });
-    }
-
-    const orgId = identity.orgId as string;
-
-    if (!orgId) {
-      throw new ConvexError({
-        code: "UNAUTHORIZED",
-        message: "Organization not found",
-      });
-    }
+    const { orgId } = await requireAuth(ctx);
 
     const { bytes, filename, category } = args;
 
@@ -81,7 +66,7 @@ export const addFile = action({
 
     if (!created) {
       console.log(
-        "entry already exists with same content hash, not creating a new one"
+        "entry already exists with same content hash, not creating a new one",
       );
       await ctx.storage.delete(storageId);
     }
@@ -98,21 +83,7 @@ export const deleteFile = mutation({
     entryId: vEntryId,
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (identity == null) {
-      throw new ConvexError({
-        code: "UNAUTHORIZED",
-        message: "Identity not found",
-      });
-    }
-    const orgId = identity.orgId as string;
-
-    if (!orgId) {
-      throw new ConvexError({
-        code: "UNAUTHORIZED",
-        message: "Organization not found",
-      });
-    }
+    const { orgId } = await requireAuth(ctx);
     const { entryId } = args;
 
     const namespace = await rag.getNamespace(ctx, {
@@ -160,21 +131,7 @@ export const list = query({
     paginationOpts: paginationOptsValidator,
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (identity == null) {
-      throw new ConvexError({
-        code: "UNAUTHORIZED",
-        message: "Identity not found",
-      });
-    }
-    const orgId = identity.orgId as string;
-
-    if (!orgId) {
-      throw new ConvexError({
-        code: "UNAUTHORIZED",
-        message: "Organization not found",
-      });
-    }
+    const { orgId } = await requireAuth(ctx);
 
     const namespace = await rag.getNamespace(ctx, {
       namespace: orgId,
@@ -190,7 +147,7 @@ export const list = query({
     });
 
     const files = await Promise.all(
-      results.page.map((entry) => convertEntryToPublicFile(ctx, entry))
+      results.page.map((entry) => convertEntryToPublicFile(ctx, entry)),
     );
 
     const filteredFiles = args.category
@@ -224,7 +181,7 @@ type EntryMetadata = {
 
 async function convertEntryToPublicFile(
   ctx: QueryCtx,
-  entry: Entry
+  entry: Entry,
 ): Promise<PublicFile> {
   const metadata = entry.metadata as EntryMetadata | undefined;
   const storageId = metadata?.storageId;

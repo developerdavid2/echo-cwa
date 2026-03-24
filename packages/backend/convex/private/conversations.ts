@@ -4,6 +4,7 @@ import { ConvexError, v } from "convex/values";
 import { Doc } from "../_generated/dataModel";
 import { mutation, query } from "../_generated/server";
 import { supportAgent } from "./../system/ai/agents/supportAgent";
+import { requireAuth } from "../lib/auth";
 
 export const updateStatus = mutation({
   args: {
@@ -11,7 +12,7 @@ export const updateStatus = mutation({
     status: v.union(
       v.literal("unresolved"),
       v.literal("escalated"),
-      v.literal("resolved")
+      v.literal("resolved"),
     ),
   },
   handler: async (ctx, args) => {
@@ -119,28 +120,12 @@ export const getMany = query({
       v.union(
         v.literal("unresolved"),
         v.literal("escalated"),
-        v.literal("resolved")
-      )
+        v.literal("resolved"),
+      ),
     ),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-
-    if (identity == null) {
-      throw new ConvexError({
-        code: "UNAUTHORIZED",
-        message: "identity not found",
-      });
-    }
-
-    const orgId = identity.orgId as string;
-
-    if (!orgId) {
-      throw new ConvexError({
-        code: "UNAUTHORIZED",
-        message: "Organization not found",
-      });
-    }
+    const { orgId } = await requireAuth(ctx);
 
     let conversations: PaginationResult<Doc<"conversations">>;
 
@@ -150,7 +135,7 @@ export const getMany = query({
         .withIndex("by_status_and_organization_id", (q) =>
           q
             .eq("status", args.status as Doc<"conversations">["status"])
-            .eq("organizationId", orgId)
+            .eq("organizationId", orgId),
         )
         .order("desc")
         .paginate(args.paginationOpts);
@@ -185,11 +170,11 @@ export const getMany = query({
           lastMessage,
           contactSession,
         };
-      })
+      }),
     );
 
     const validConversations = conversationsWIthAdditionalData.filter(
-      (conv): conv is NonNullable<typeof conv> => conv !== null
+      (conv): conv is NonNullable<typeof conv> => conv !== null,
     );
 
     return {
