@@ -4,6 +4,7 @@ import { internal } from "../_generated/api";
 import { getSecretValue, parseSecretString } from "../lib/secrets";
 import { VapiClient } from "@vapi-ai/server-sdk";
 import type { VapiAssistant, VapiPhoneNumber } from "../types/vapi";
+import { requireAuth } from "../lib/auth";
 
 export const getAssistants = action({
   args: {},
@@ -73,30 +74,14 @@ export const getAssistants = action({
       id: assistant.id,
       name: assistant.name ?? "Unnamed assistant",
       firstMessage: assistant.firstMessage ?? null,
-      modelProvider: assistant.model?.provider ?? null,
+      modelProvider: assistant.model?.model ?? null,
     }));
   },
 });
 export const getPhoneNumbers = action({
   args: {},
   handler: async (ctx): Promise<VapiPhoneNumber[]> => {
-    const identity = await ctx.auth.getUserIdentity();
-
-    if (identity == null) {
-      throw new ConvexError({
-        code: "UNAUTHORIZED",
-        message: "Identity not found",
-      });
-    }
-
-    const orgId = identity.orgId as string;
-
-    if (!orgId) {
-      throw new ConvexError({
-        code: "UNAUTHORIZED",
-        message: "Organization not found",
-      });
-    }
+    const { orgId } = await requireAuth(ctx);
 
     const plugin = await ctx.runQuery(
       internal.system.plugins.getByOrganizationAndService,

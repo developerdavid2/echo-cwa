@@ -8,29 +8,14 @@ import { generateText } from "ai";
 import { groq } from "@ai-sdk/groq";
 import { cohere } from "@ai-sdk/cohere";
 import { OPERATOR_MESSAGE_ENHANCEMENT_PROMPT } from "../system/ai/constants";
+import { requireAuth } from "../lib/auth";
 
 export const enhanceResponse = action({
   args: {
     prompt: v.string(),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-
-    if (identity == null) {
-      throw new ConvexError({
-        code: "UNAUTHORIZED",
-        message: "Identity not found",
-      });
-    }
-
-    const orgId = identity.orgId as string;
-
-    if (!orgId) {
-      throw new ConvexError({
-        code: "UNAUTHORIZED",
-        message: "Organization not found",
-      });
-    }
+    await requireAuth(ctx);
     const response = await generateText({
       model: groq("llama-3.1-8b-instant"),
       messages: [
@@ -55,23 +40,7 @@ export const create = mutation({
     conversationId: v.id("conversations"),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-
-    if (identity == null) {
-      throw new ConvexError({
-        code: "UNAUTHORIZED",
-        message: "Identity not found",
-      });
-    }
-
-    const orgId = identity.orgId as string;
-
-    if (!orgId) {
-      throw new ConvexError({
-        code: "UNAUTHORIZED",
-        message: "Organization not found",
-      });
-    }
+    const { identity, orgId } = await requireAuth(ctx);
 
     const conversation = await ctx.db.get(args.conversationId);
 
@@ -120,23 +89,7 @@ export const getMany = query({
     paginationOpts: paginationOptsValidator,
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-
-    if (identity == null) {
-      throw new ConvexError({
-        code: "UNAUTHORIZED",
-        message: "Identity not found",
-      });
-    }
-
-    const orgId = identity.orgId as string;
-
-    if (!orgId) {
-      throw new ConvexError({
-        code: "UNAUTHORIZED",
-        message: "Organization not found",
-      });
-    }
+    const { orgId } = await requireAuth(ctx);
 
     const conversation = await ctx.db
       .query("conversations")
