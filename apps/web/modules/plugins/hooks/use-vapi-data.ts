@@ -21,24 +21,31 @@ export const useVapiPhoneNumbers = (): {
   );
 
   const getPhoneNumbers = useAction(api.private.vapi.getPhoneNumbers);
-
   useEffect(() => {
     if (cachedPhoneNumbers) return;
 
+    let isMounted = true;
+
     const fetchData = async () => {
       try {
-        setState("loading");
+        if (isMounted) setState("loading");
         const result = await getPhoneNumbers();
         cachedPhoneNumbers = result;
+        if (!isMounted) return;
         setData(result);
         setState("success");
       } catch {
+        if (!isMounted) return;
         setState("error");
         toast.error("Failed to fetch phone numbers");
       }
     };
 
     fetchData();
+
+    return () => {
+      isMounted = false;
+    };
   }, [getPhoneNumbers]);
 
   return { data, state };
@@ -67,14 +74,18 @@ export const useVapiAssistants = (): {
   useEffect(() => {
     if (cachedAssistants) return;
 
+    let isMounted = true;
+
     const fetchData = async () => {
       try {
-        setState("loading");
+        if (isMounted) setState("loading");
         const result = await getAssistants();
         cachedAssistants = result;
+        if (!isMounted) return;
         setData(result);
         setState("success");
       } catch {
+        if (!isMounted) return;
         setState("error");
         toast.error("Failed to fetch assistants");
       }
