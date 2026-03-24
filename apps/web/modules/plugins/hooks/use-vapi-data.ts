@@ -92,6 +92,10 @@ export const useVapiAssistants = (): {
     };
 
     fetchData();
+
+    return () => {
+      isMounted = false;
+    };
   }, [getAssistants]);
 
   return { data, state };
