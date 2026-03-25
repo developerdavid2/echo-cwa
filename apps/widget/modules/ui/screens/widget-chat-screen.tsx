@@ -5,6 +5,7 @@ import {
   conversationIdAtom,
   organizationIdAtom,
   screenAtom,
+  widgetSettingsAtom,
 } from "@/modules/widget/atoms/widget-atoms";
 import { toUIMessages, useThreadMessages } from "@convex-dev/agent/react";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -17,6 +18,11 @@ import {
   AIInputToolbar,
   AIInputTools,
 } from "@workspace/ui/components/ai/input";
+
+import {
+  AISuggestion,
+  AISuggestions,
+} from "@workspace/ui/components/ai/suggestion";
 import {
   AIMessage,
   AIMessageContent,
@@ -38,6 +44,7 @@ import { z } from "zod";
 import { WidgetHeader } from "../components/widget-header";
 import { AIMessageSkeleton } from "@workspace/ui/components/ai/chat-message-skeleton";
 import { DicebearAvatar } from "@workspace/ui/components/dicebear-avatar";
+import { useMemo } from "react";
 
 const formSchema = z.object({
   message: z.string().min(1, "Message is required"),
@@ -48,6 +55,7 @@ type FormSchema = z.infer<typeof formSchema>;
 // Separate component for chat content to access ScrollToBottom hooks
 const ChatContent = ({
   messages,
+
   canLoadMore,
   isLoadingMore,
   handleLoadMore,
@@ -55,6 +63,7 @@ const ChatContent = ({
   conversation,
 }: {
   messages: ReturnType<typeof useThreadMessages>;
+
   conversation: ReturnType<typeof useQuery>;
   canLoadMore: boolean;
   isLoadingMore: boolean;
@@ -94,12 +103,11 @@ const ChatContent = ({
             {toUIMessages(messages.results ?? [])?.map((message) => {
               // Find the original message to get _creationTime
               const originalMessage = messages.results?.find(
-                (m) => m._id === message.id
+                (m) => m._id === message.id,
               );
               const messageFrom =
                 message.role === "user" ? "user" : "assistant";
 
-              console.log(message);
               return (
                 <AIMessage
                   from={messageFrom}
@@ -163,8 +171,9 @@ export const WidgetChatScreen = () => {
   const organizationId = useAtomValue(organizationIdAtom);
   const conversationId = useAtomValue(conversationIdAtom);
   const contactSessionId = useAtomValue(
-    contactSessionIdAtomFamily(organizationId || "")
+    contactSessionIdAtomFamily(organizationId || ""),
   );
+  const widgetSettings = useAtomValue(widgetSettingsAtom);
 
   const setScreen = useSetAtom(screenAtom);
   const setConversationId = useSetAtom(conversationIdAtom);
@@ -174,11 +183,22 @@ export const WidgetChatScreen = () => {
     setScreen("inbox");
   };
 
+  const suggestions = useMemo(() => {
+    if (!widgetSettings) {
+      return [];
+    }
+
+    return Object.keys(widgetSettings.defaultSuggestions).map((key) => {
+      return widgetSettings.defaultSuggestions[
+        key as keyof typeof widgetSettings.defaultSuggestions
+      ];
+    });
+  }, [widgetSettings]);
   const conversation = useQuery(
     api.public.conversations.getOne,
     conversationId && contactSessionId
       ? { conversationId, contactSessionId }
-      : "skip"
+      : "skip",
   );
 
   const messages = useThreadMessages(
@@ -186,7 +206,7 @@ export const WidgetChatScreen = () => {
     conversation?.threadId && contactSessionId
       ? { threadId: conversation.threadId, contactSessionId }
       : "skip",
-    { initialNumItems: 10 }
+    { initialNumItems: 10 },
   );
 
   const { topElementRef, handleLoadMore, canLoadMore, isLoadingMore } =
@@ -229,7 +249,6 @@ export const WidgetChatScreen = () => {
           <MenuIcon className="h-5 w-5" />
         </Button>
       </WidgetHeader>
-
       {/* Scrollable Chat Area - Let ScrollToBottom handle the scroll */}
       <div className="flex-1 overflow-hidden">
         <ScrollToBottom
@@ -248,6 +267,30 @@ export const WidgetChatScreen = () => {
         </ScrollToBottom>
       </div>
 
+      {toUIMessages(messages.results ?? [])?.length === 1 && (
+        <AISuggestions className="flex w-full flex-col items-end p-2">
+          {suggestions.map((suggestion) => {
+            if (!suggestion) {
+              return null;
+            }
+
+            return (
+              <AISuggestion
+                key={suggestion}
+                onClick={() => {
+                  form.setValue("message", suggestion, {
+                    shouldValidate: true,
+                    shouldDirty: true,
+                    shouldTouch: true,
+                  });
+                  form.handleSubmit(onSubmit)();
+                }}
+                suggestion={suggestion}
+              />
+            );
+          })}
+        </AISuggestions>
+      )}
       {/* Fixed Footer Input */}
       <div className="shrink-0">
         <Form {...form}>

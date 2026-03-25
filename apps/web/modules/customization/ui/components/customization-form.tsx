@@ -185,7 +185,7 @@ export const CustomizationForm = ({
         {hasVapiPlugin && (
           <Card>
             <CardHeader>
-              <CardTitle>Voice Asisistant Settings</CardTitle>
+              <CardTitle>Voice Assistant Settings</CardTitle>
               <CardDescription>
                 Configure voice calling features powered by Vapi
               </CardDescription>
