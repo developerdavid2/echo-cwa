@@ -1,76 +1,134 @@
 "use client";
 
 import Vapi from "@vapi-ai/web";
+import { useAtomValue } from "jotai";
 import { useEffect, useState } from "react";
+import { vapiSecretsAtom, widgetSettingsAtom } from "../atoms/widget-atoms";
 
 interface TranscriptMessage {
   role: "user" | "assistant";
   text: string;
 }
 
+// State machine - only ONE of these states can exist at a time
+type VapiState =
+  | { status: "idle" }
+  | { status: "connecting" }
+  | {
+      status: "connected";
+      isSpeaking: boolean;
+      transcript: TranscriptMessage[];
+    }
+  | { status: "error"; error: string };
+
 export const useVapi = () => {
   const [vapi, setVapi] = useState<Vapi | null>(null);
-  const [isConnected, setIsConnected] = useState(false);
-  const [isConnecting, setIsConnecting] = useState(false);
-  const [isSpeaking, setIsSpeaking] = useState(false);
-  const [transcript, setTranscript] = useState<TranscriptMessage[]>([]);
+  const [state, setState] = useState<VapiState>({ status: "idle" });
+
+  const vapiSecrets = useAtomValue(vapiSecretsAtom);
+  const widgetSettings = useAtomValue(widgetSettingsAtom);
 
   useEffect(() => {
-    const vapiInstance = new Vapi("91330df8-58cf-41b7-8eb3-994b69cec2a8");
+    if (!vapiSecrets) {
+      return;
+    }
+    const publicApiKey = vapiSecrets?.publicApiKey;
+    if (!publicApiKey) {
+      return;
+    }
+    const vapiInstance = new Vapi(publicApiKey);
     setVapi(vapiInstance);
 
     vapiInstance.on("call-start", () => {
-      setIsConnected(true);
-      setIsConnecting(false);
-      setTranscript([]);
+      setState({
+        status: "connected",
+        isSpeaking: false,
+        transcript: [],
+      });
     });
 
     vapiInstance.on("call-end", () => {
-      setIsConnected(false);
-      setIsConnecting(false);
-      setIsSpeaking(false);
+      setState({ status: "idle" });
     });
 
-    vapiInstance.on("speech-start", () => setIsSpeaking(true));
-    vapiInstance.on("speech-end", () => setIsSpeaking(false));
+    vapiInstance.on("speech-start", () => {
+      setState((prev) =>
+        prev.status === "connected" ? { ...prev, isSpeaking: true } : prev,
+      );
+    });
+
+    vapiInstance.on("speech-end", () => {
+      setState((prev) =>
+        prev.status === "connected" ? { ...prev, isSpeaking: false } : prev,
+      );
+    });
 
     vapiInstance.on("error", (error) => {
-      console.log(error, "VAPI_ERROR");
-      setIsConnecting(false);
+      console.error("VAPI_ERROR:", error);
+      setState({ status: "error", error: error.message || "Unknown error" });
     });
 
     vapiInstance.on("message", (message) => {
       if (message.type === "transcript" && message.transcriptType === "final") {
-        setTranscript((prev) => [
-          ...prev,
-          {
-            role: message.role === "user" ? "user" : "assistant",
-            text: message.transcript,
-          },
-        ]);
+        setState((prev) =>
+          prev.status === "connected"
+            ? {
+                ...prev,
+                transcript: [
+                  ...prev.transcript,
+                  {
+                    role: message.role === "user" ? "user" : "assistant",
+                    text: message.transcript,
+                  },
+                ],
+              }
+            : prev,
+        );
       }
     });
 
     return () => {
       vapiInstance.stop();
     };
-  }, []);
+  }, [vapiSecrets]);
 
   const startCall = () => {
-    setIsConnecting(true);
-    vapi?.start("7190b58a-6626-40ae-aefd-3fda1ca3c9f0");
+    if (!vapi || !vapiSecrets || !widgetSettings?.vapiSettings?.assistantId) {
+      return;
+    }
+
+    if (state.status === "idle" || state.status === "error") {
+      setState({ status: "connecting" });
+      vapi.start(widgetSettings.vapiSettings.assistantId);
+    }
   };
 
   const endCall = () => {
-    vapi?.stop();
+    if (state.status === "connected" || state.status === "connecting") {
+      vapi?.stop();
+    }
   };
 
+  // Derived computed values for easier consumption
   return {
-    isSpeaking,
-    isConnecting,
-    isConnected,
-    transcript,
+    // State checks
+    isIdle: state.status === "idle",
+    isConnecting: state.status === "connecting",
+    isConnected: state.status === "connected",
+    isError: state.status === "error",
+
+    // Only available when connected
+    isSpeaking: state.status === "connected" ? state.isSpeaking : false,
+    transcript: state.status === "connected" ? state.transcript : [],
+
+    // Error details
+    error: state.status === "error" ? state.error : null,
+
+    // Actions
     startCall,
     endCall,
+
+    // Raw state for advanced usage
+    state,
   };
 };
