@@ -89,13 +89,13 @@ export const useVapi = () => {
   }, [vapiSecrets]);
 
   const startCall = () => {
-    if (!vapiSecrets || !widgetSettings?.vapiSettings?.assistantId) {
+    if (!vapi || !vapiSecrets || !widgetSettings?.vapiSettings?.assistantId) {
       return;
     }
 
     if (state.status === "idle" || state.status === "error") {
       setState({ status: "connecting" });
-      vapi?.start(widgetSettings.vapiSettings.assistantId);
+      vapi.start(widgetSettings.vapiSettings.assistantId);
     }
   };
 

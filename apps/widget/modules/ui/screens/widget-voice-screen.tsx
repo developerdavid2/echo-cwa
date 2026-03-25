@@ -35,6 +35,7 @@ export const WidgetVoiceScreen = () => {
           <Button
             variant="transparent"
             size="icon"
+            aria-label="Back to options"
             onClick={() => setScreen("selection")}
           >
             <ArrowLeftIcon />
@@ -63,7 +64,7 @@ export const WidgetVoiceScreen = () => {
             <div className="flex items-center justify-center rounded-full border bg-white p-3">
               <MicIcon className="size-6 text-muted-foreground" />
             </div>
-            <p className="text-muted-foreground">Transcript will appeat here</p>
+            <p className="text-muted-foreground">Transcript will appear here</p>
           </>
         )}
       </div>

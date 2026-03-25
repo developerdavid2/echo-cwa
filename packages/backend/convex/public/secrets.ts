@@ -20,22 +20,28 @@ export const getVapiSecrets = action({
 
     const secretName = plugin.secretName;
 
-    const secret = await getSecretValue(secretName);
-
-    const secretData = parseSecretString<{
+    let secretData: {
       privateApiKey: string;
       publicApiKey: string;
-    }>(secret);
+    } | null = null;
 
-    if (!secretData) {
+    try {
+      const secret = await getSecretValue(secretName);
+      secretData = parseSecretString<{
+        privateApiKey: string;
+        publicApiKey: string;
+      }>(secret);
+    } catch {
       return null;
     }
 
-    if (!secretData.publicApiKey) {
-      return null;
-    }
-
-    if (!secretData.privateApiKey) {
+    if (
+      !secretData ||
+      typeof secretData.publicApiKey !== "string" ||
+      secretData.publicApiKey.length === 0 ||
+      typeof secretData.privateApiKey !== "string" ||
+      secretData.privateApiKey.length === 0
+    ) {
       return null;
     }
 
