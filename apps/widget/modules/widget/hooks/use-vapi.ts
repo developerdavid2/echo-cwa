@@ -32,7 +32,11 @@ export const useVapi = () => {
     if (!vapiSecrets) {
       return;
     }
-    const vapiInstance = new Vapi(vapiSecrets.publicApiKey);
+    const publicApiKey = vapiSecrets?.publicApiKey;
+    if (!publicApiKey) {
+      return;
+    }
+    const vapiInstance = new Vapi(publicApiKey);
     setVapi(vapiInstance);
 
     vapiInstance.on("call-start", () => {
