@@ -6,9 +6,10 @@ import {
   loadingMessageAtom,
   organizationIdAtom,
   screenAtom,
+  widgetSettingsAtom,
 } from "@/modules/widget/atoms/widget-atoms";
 import { api } from "@workspace/backend/_generated/api";
-import { useAction, useMutation } from "convex/react";
+import { useAction, useMutation, useQuery } from "convex/react";
 import { useAtomValue, useSetAtom } from "jotai";
 import { LoaderIcon } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -27,10 +28,11 @@ export const WidgetLoadingScreen = ({
   const [sessionValid, setSessionValid] = useState(false);
 
   const contactSessionId = useAtomValue(
-    contactSessionIdAtomFamily(organizationId || "")
+    contactSessionIdAtomFamily(organizationId || ""),
   );
   const loadingMessage = useAtomValue(loadingMessageAtom);
 
+  const setWidgetSettings = useSetAtom(widgetSettingsAtom);
   const setOrganizationId = useSetAtom(organizationIdAtom);
   const setErrorMessage = useSetAtom(errorMessageAtom);
   const setScreen = useSetAtom(screenAtom);
@@ -81,7 +83,7 @@ export const WidgetLoadingScreen = ({
   ]);
   // Step 2: Validate session if exists
   const validateContactSession = useMutation(
-    api.public.contactSession.validate
+    api.public.contactSession.validate,
   );
 
   useEffect(() => {
@@ -95,7 +97,7 @@ export const WidgetLoadingScreen = ({
 
       if (!contactSessionId) {
         setSessionValid(false);
-        setStep("done");
+        setStep("settings");
         return;
       }
 
@@ -107,13 +109,37 @@ export const WidgetLoadingScreen = ({
         });
 
         setSessionValid(result.valid);
-        setStep("done");
+        setStep("settings");
       } catch {
         setSessionValid(false);
-        setStep("done");
+        setStep("settings");
       }
     })();
   }, [step, contactSessionId, validateContactSession, setLoadingMessage]);
+
+  // Step 3: Load Widget Setting
+  const widgetSettings = useQuery(
+    api.public.widgetSettings.getByOrganizationId,
+    organizationId
+      ? {
+          organizationId,
+        }
+      : "skip",
+  );
+
+  useEffect(() => {
+    if (step !== "settings") {
+      return;
+    }
+
+    setLoadingMessage("Loading widget settings...");
+
+    if (widgetSettings !== undefined) {
+      setWidgetSettings(widgetSettings);
+
+      setStep("done");
+    }
+  }, [setLoadingMessage, setWidgetSettings, step, widgetSettings, setStep]);
 
   useEffect(() => {
     if (step !== "done") {
