@@ -32,7 +32,8 @@ import { Button } from "@workspace/ui/components/button";
 import { Form, FormField } from "@workspace/ui/components/form";
 import { InfiniteScrollTrigger } from "@workspace/ui/components/infinite-scroll-trigger";
 import { useInfiniteScroll } from "@workspace/ui/hooks/use-infinite-scroll";
-import { useAction, useQuery } from "convex/react";
+import { useTypingIndicator } from "@workspace/ui/hooks/use-typing-indicator";
+import { useAction, useMutation, useQuery } from "convex/react";
 import { useAtomValue, useSetAtom } from "jotai";
 import { ArrowDownIcon, ArrowLeftIcon, MenuIcon } from "lucide-react";
 import { useForm } from "react-hook-form";
@@ -44,6 +45,7 @@ import { z } from "zod";
 import { WidgetHeader } from "../components/widget-header";
 import { AIMessageSkeleton } from "@workspace/ui/components/ai/chat-message-skeleton";
 import { DicebearAvatar } from "@workspace/ui/components/dicebear-avatar";
+import { TypingIndicator } from "@workspace/ui/components/typing-indicator";
 import { useMemo } from "react";
 
 const formSchema = z.object({
@@ -55,24 +57,35 @@ type FormSchema = z.infer<typeof formSchema>;
 // Separate component for chat content to access ScrollToBottom hooks
 const ChatContent = ({
   messages,
-
   canLoadMore,
   isLoadingMore,
   handleLoadMore,
   topElementRef,
   conversation,
+  conversationId,
+  contactSessionId,
 }: {
   messages: ReturnType<typeof useThreadMessages>;
-
   conversation: ReturnType<typeof useQuery>;
   canLoadMore: boolean;
   isLoadingMore: boolean;
   handleLoadMore: () => void;
   topElementRef: React.RefObject<HTMLDivElement | null>;
+  conversationId: string;
+  contactSessionId: string;
 }) => {
   const scrollToBottom = useScrollToBottom();
   const [sticky] = useSticky();
 
+  const typingStatus = useQuery(
+    api.public.typingStatus.getTypingStatus,
+    conversationId && contactSessionId
+      ? {
+          conversationId: conversationId as Id<"conversations">,
+          contactSessionId: contactSessionId as Id<"contactSessions">,
+        }
+      : "skip",
+  );
   return (
     <>
       <div className="p-4">
@@ -147,6 +160,35 @@ const ChatContent = ({
                 </AIMessage>
               );
             })}
+
+            {typingStatus?.isOperatorTyping && (
+              <AIMessage from="assistant">
+                <div className="flex flex-col gap-2 rounded-lg border border-border px-3 py-2 bg-background">
+                  <TypingIndicator />
+                </div>
+                <DicebearAvatar
+                  imageUrl={
+                    conversation?.status === "escalated" ||
+                    conversation?.status === "resolved"
+                      ? ""
+                      : "/logo.svg"
+                  }
+                  seed={
+                    conversation?.status === "escalated" ||
+                    conversation?.status === "resolved"
+                      ? "user"
+                      : "assistant"
+                  }
+                  size={32}
+                  badgeImageUrl={
+                    conversation?.status === "escalated" ||
+                    conversation?.status === "resolved"
+                      ? "/logo.svg"
+                      : ""
+                  }
+                />
+              </AIMessage>
+            )}
           </>
         )}
       </div>
@@ -194,6 +236,7 @@ export const WidgetChatScreen = () => {
       ];
     });
   }, [widgetSettings]);
+
   const conversation = useQuery(
     api.public.conversations.getOne,
     conversationId && contactSessionId
@@ -221,18 +264,40 @@ export const WidgetChatScreen = () => {
     defaultValues: { message: "" },
   });
 
+  const setTypingStatus = useMutation(api.public.typingStatus.setTyping);
+
+  const { handleTypingStart, handleTypingStop } = useTypingIndicator(
+    (isTyping) => {
+      if (conversationId && contactSessionId) {
+        setTypingStatus({
+          conversationId: conversationId as Id<"conversations">,
+          contactSessionId: contactSessionId as Id<"contactSessions">,
+          isTyping,
+        });
+      }
+    },
+  );
   const createMessage = useAction(api.public.messages.create);
 
-  const onSubmit = async (values: FormSchema) => {
+  const onSubmit = (values: FormSchema) => {
     if (!conversation) return;
 
-    await createMessage({
-      threadId: conversation.threadId,
-      prompt: values.message,
-      contactSessionId: contactSessionId as Id<"contactSessions">,
-    });
+    const messageText = values.message;
 
+    // Clear input IMMEDIATELY (synchronous)
     form.reset({ message: "" });
+
+    handleTypingStop();
+
+    // Fire and forget - let Convex handle the reactive update
+    createMessage({
+      threadId: conversation.threadId,
+      prompt: messageText,
+      contactSessionId: contactSessionId as Id<"contactSessions">,
+    }).catch((error) => {
+      // Optional: handle errors silently or show a toast
+      console.error("Failed to send message:", error);
+    });
   };
 
   return (
@@ -249,7 +314,8 @@ export const WidgetChatScreen = () => {
           <MenuIcon className="h-5 w-5" />
         </Button>
       </WidgetHeader>
-      {/* Scrollable Chat Area - Let ScrollToBottom handle the scroll */}
+
+      {/* Scrollable Chat Area */}
       <div className="flex-1 overflow-hidden">
         <ScrollToBottom
           className="h-full"
@@ -263,10 +329,13 @@ export const WidgetChatScreen = () => {
             topElementRef={topElementRef}
             handleLoadMore={handleLoadMore}
             conversation={conversation}
+            conversationId={conversationId || ""}
+            contactSessionId={contactSessionId || ""}
           />
         </ScrollToBottom>
       </div>
 
+      {/* Suggestions - only show for first message */}
       {toUIMessages(messages.results ?? [])?.length === 1 && (
         <AISuggestions className="flex w-full flex-col items-end p-2">
           {suggestions.map((suggestion) => {
@@ -291,6 +360,7 @@ export const WidgetChatScreen = () => {
           })}
         </AISuggestions>
       )}
+
       {/* Fixed Footer Input */}
       <div className="shrink-0">
         <Form {...form}>
@@ -311,6 +381,10 @@ export const WidgetChatScreen = () => {
                       ? "This conversation has been resolved."
                       : "Type your message..."
                   }
+                  onChange={(e) => {
+                    field.onChange(e);
+                    handleTypingStart();
+                  }}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && !e.shiftKey) {
                       e.preventDefault();

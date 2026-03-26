@@ -35,6 +35,8 @@ import { useForm } from "react-hook-form";
 import z from "zod";
 import { ConversationStatusButton } from "../components/conversation-status-button";
 import { useInfiniteScroll } from "@workspace/ui/hooks/use-infinite-scroll";
+import { TypingIndicator } from "@workspace/ui/components/typing-indicator";
+import { useTypingIndicator } from "@workspace/ui/hooks/use-typing-indicator";
 import { InfiniteScrollTrigger } from "@workspace/ui/components/infinite-scroll-trigger";
 import { cn } from "@workspace/ui/lib/utils";
 import { Skeleton } from "@workspace/ui/components/skeleton";
@@ -58,7 +60,7 @@ export const ConversationIdView = ({
       ? {
           conversationId,
         }
-      : "skip"
+      : "skip",
   );
 
   const messages = useThreadMessages(
@@ -68,7 +70,7 @@ export const ConversationIdView = ({
           threadId: conversation.threadId,
         }
       : "skip",
-    { initialNumItems: 10 }
+    { initialNumItems: 10 },
   );
 
   const {
@@ -109,9 +111,27 @@ export const ConversationIdView = ({
   };
 
   const createMessage = useMutation(api.private.messages.create);
+  const setTypingStatus = useMutation(api.private.typingStatus.setTyping);
+
+  const typingStatus = useQuery(
+    api.private.typingStatus.getTypingStatus,
+    conversationId ? { conversationId } : "skip",
+  );
+
+  const { handleTypingStart, handleTypingStop } = useTypingIndicator(
+    (isTyping) => {
+      if (conversationId) {
+        setTypingStatus({ conversationId, isTyping });
+      }
+    },
+    1500,
+  );
 
   const onSubmit = async (values: FormSchema) => {
     if (!conversation) return;
+
+    // ✅ ADD: Stop typing on submit
+    handleTypingStop();
 
     try {
       await createMessage({
@@ -126,7 +146,7 @@ export const ConversationIdView = ({
   };
 
   const updateConversationStatus = useMutation(
-    api.private.conversations.updateStatus
+    api.private.conversations.updateStatus,
   );
 
   const handleToggleStatus = async () => {
@@ -188,7 +208,7 @@ export const ConversationIdView = ({
           {toUIMessages(messages.results ?? [])?.map((message) => {
             // Find the original message to get _creationTime
             const originalMessage = messages.results?.find(
-              (m) => m._id === message.id
+              (m) => m._id === message.id,
             );
             const messageFrom = message.role === "user" ? "assistant" : "user";
 
@@ -214,6 +234,18 @@ export const ConversationIdView = ({
               </AIMessage>
             );
           })}
+
+          {typingStatus?.isContactTyping && (
+            <AIMessage from="assistant">
+              <AIMessageContent from="assistant">
+                <TypingIndicator />
+              </AIMessageContent>
+              <DicebearAvatar
+                seed={conversation?.contactSessionId ?? ""}
+                size={32}
+              />
+            </AIMessage>
+          )}
         </AIConversationContent>
         <AIConversationScrollButton />
       </AIConversation>
@@ -239,6 +271,10 @@ export const ConversationIdView = ({
                       ? "This conversation has been resolved."
                       : "Type your response as an operator..."
                   }
+                  onChange={(e) => {
+                    field.onChange(e);
+                    handleTypingStart();
+                  }}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && !e.shiftKey) {
                       e.preventDefault();
@@ -301,7 +337,7 @@ export const ConversationIdViewLoading = () => {
               <div
                 className={cn(
                   "group flex w-full items-end justify-end gap-2 py-2 [&>div]:max-w-[80%]",
-                  isUser ? "is-user" : "is-assistant flex-row-reverse"
+                  isUser ? "is-user" : "is-assistant flex-row-reverse",
                 )}
                 key={index}
               >

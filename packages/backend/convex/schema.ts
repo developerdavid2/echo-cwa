@@ -2,6 +2,14 @@ import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 
 export default defineSchema({
+  typingStatus: defineTable({
+    conversationId: v.id("conversations"),
+    userType: v.union(v.literal("contact"), v.literal("operator")),
+    isTyping: v.boolean(),
+    lastUpdated: v.number(),
+  })
+    .index("by_conversation", ["conversationId"])
+    .index("by_conversation_and_type", ["conversationId", "userType"]),
   widgetSettings: defineTable({
     organizationId: v.string(),
     greetMessage: v.string(),
