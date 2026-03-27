@@ -171,7 +171,7 @@ export const ContactPanel = () => {
                 {
                   label: "Country",
                   value: (
-                    <span className="flex items-center gap-1.5">
+                    <span className="flex items-center gap-2">
                       <Image
                         src={getCountryFlagUrl(countryInfo.code)}
                         alt={countryInfo.name}
