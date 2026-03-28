@@ -60,6 +60,8 @@ export const create = action({
         organizationId: conversation.organizationId,
       },
     );
+
+    console.log(subscriptions?.status);
     //TODO: Implement subscription check
     const shouldTrigggerAgent =
       conversation.status === "unresolved" &&

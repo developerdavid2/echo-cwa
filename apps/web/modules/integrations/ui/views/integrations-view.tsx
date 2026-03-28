@@ -40,7 +40,6 @@ export const IntegrationsView = () => {
     if (!organization) {
       return;
     }
-
     try {
       await navigator.clipboard.writeText(organization.id);
 
