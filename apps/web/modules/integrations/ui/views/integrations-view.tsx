@@ -5,20 +5,13 @@ import { Button } from "@workspace/ui/components/button";
 import { Input } from "@workspace/ui/components/input";
 import { Label } from "@workspace/ui/components/label";
 import { Separator } from "@workspace/ui/components/separator";
-import { CheckIcon, CopyIcon } from "lucide-react";
+import { CopyIcon } from "lucide-react";
+import Image from "next/image";
 import { useState } from "react";
 import { toast } from "sonner";
 import { INTEGRATIONS, IntegrationId } from "../../constants";
-import Image from "next/image";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@workspace/ui/components/dialog";
-import { IntegrationsDialog } from "../components/integrations-dialog";
 import { createScript } from "../../utils";
+import { IntegrationsDialog } from "../components/integrations-dialog";
 
 export const IntegrationsView = () => {
   const { organization } = useOrganization();
