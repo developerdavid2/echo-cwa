@@ -7,22 +7,42 @@ export const upsert = internalMutation({
     status: v.string(),
   },
   handler: async (ctx, args) => {
-    const exisitngSubscription = await ctx.db
+    const existingSubscription = await ctx.db
       .query("subscriptions")
       .withIndex("by_organization_id", (q) =>
         q.eq("organizationId", args.organizationId),
       )
       .unique();
 
-    if (exisitngSubscription) {
-      await ctx.db.patch(exisitngSubscription._id, {
+    if (existingSubscription) {
+      // Update existing
+      await ctx.db.patch(existingSubscription._id, {
         status: args.status,
       });
-    } else {
+
+      return;
+    }
+
+    try {
       await ctx.db.insert("subscriptions", {
         organizationId: args.organizationId,
         status: args.status,
       });
+    } catch (error) {
+      const subscription = await ctx.db
+        .query("subscriptions")
+        .withIndex("by_organization_id", (q) =>
+          q.eq("organizationId", args.organizationId),
+        )
+        .unique();
+
+      if (subscription) {
+        await ctx.db.patch(subscription._id, {
+          status: args.status,
+        });
+      } else {
+        throw error;
+      }
     }
   },
 });
@@ -32,11 +52,13 @@ export const getByOrganizationId = internalQuery({
     organizationId: v.string(),
   },
   handler: async (ctx, args) => {
-    const exisitngSubscription = await ctx.db
+    const existingSubscription = await ctx.db
       .query("subscriptions")
       .withIndex("by_organization_id", (q) =>
         q.eq("organizationId", args.organizationId),
       )
       .unique();
+
+    return existingSubscription;
   },
 });

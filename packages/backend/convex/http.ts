@@ -6,22 +6,31 @@ import { internal } from "./_generated/api";
 
 const http = httpRouter();
 
+class ConfigError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "ConfigError";
+  }
+}
+
+class ValidationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "ValidationError";
+  }
+}
+
 http.route({
   path: "/clerk-webhook",
   method: "POST",
   handler: httpAction(async (ctx, request) => {
-    // Validate the webhook
-    const event = await validateRequest(request);
-
-    if (!event) {
-      console.error("Webhook validation failed");
-      return new Response("Invalid webhook", { status: 400 });
-    }
-
-    const { type } = event;
-    console.log(`📬 Received webhook: ${type}`);
-
     try {
+      // Validate the webhook
+      const event = await validateRequest(request);
+
+      const { type } = event;
+      console.log(`📬 Received webhook: ${type}`);
+
       switch (type) {
         case "subscription.updated":
           if (event.type === "subscription.updated") {
@@ -58,18 +67,28 @@ http.route({
 
       return new Response("Webhook processed", { status: 200 });
     } catch (error) {
+      if (error instanceof ConfigError) {
+        console.error("Configuration error:", error.message);
+        return new Response("Server configuration error", { status: 500 });
+      }
+
+      if (error instanceof ValidationError) {
+        console.error("Validation error:", error.message);
+        return new Response("Invalid webhook signature", { status: 400 });
+      }
+
+      // Unknown error - return 500
       console.error("Error processing webhook:", error);
       return new Response("Error processing webhook", { status: 500 });
     }
   }),
 });
 
-async function validateRequest(req: Request): Promise<WebhookEvent | null> {
+async function validateRequest(req: Request): Promise<WebhookEvent> {
   const webhookSecret = process.env.CLERK_WEBHOOK_SECRET;
 
   if (!webhookSecret) {
-    console.error("CLERK_WEBHOOK_SECRET is not set");
-    return null;
+    throw new ConfigError("CLERK_WEBHOOK_SECRET is not set");
   }
 
   const payloadString = await req.text();
@@ -80,6 +99,14 @@ async function validateRequest(req: Request): Promise<WebhookEvent | null> {
     "svix-signature": req.headers.get("svix-signature") || "",
   };
 
+  if (
+    !svixHeaders["svix-id"] ||
+    !svixHeaders["svix-timestamp"] ||
+    !svixHeaders["svix-signature"]
+  ) {
+    throw new ValidationError("Missing required svix headers");
+  }
+
   const wh = new Webhook(webhookSecret);
 
   try {
@@ -89,8 +116,9 @@ async function validateRequest(req: Request): Promise<WebhookEvent | null> {
     ) as unknown as WebhookEvent;
     return event;
   } catch (error) {
-    console.error("Error verifying webhook:", error);
-    return null;
+    throw new ValidationError(
+      `Webhook signature verification failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+    );
   }
 }
 
