@@ -19,7 +19,7 @@ export const create = action({
       internal.system.contactSessions.getOne,
       {
         contactSessionId: args.contactSessionId,
-      }
+      },
     );
 
     if (!contactSession || contactSession.expiresAt < Date.now()) {
@@ -33,7 +33,7 @@ export const create = action({
       internal.system.conversations.getByThreadId,
       {
         threadId: args.threadId,
-      }
+      },
     );
 
     if (!conversation) {
@@ -50,8 +50,20 @@ export const create = action({
       });
     }
 
+    await ctx.runMutation(internal.system.contactSessions.refresh, {
+      contactSessionId: args.contactSessionId,
+    });
+
+    const subscriptions = await ctx.runQuery(
+      internal.system.subscriptions.getByOrganizationId,
+      {
+        organizationId: conversation.organizationId,
+      },
+    );
     //TODO: Implement subscription check
-    const shouldTrigggerAgent = conversation.status === "unresolved";
+    const shouldTrigggerAgent =
+      conversation.status === "unresolved" &&
+      subscriptions?.status === "active";
 
     if (shouldTrigggerAgent) {
       await supportAgent.generateText(
@@ -64,7 +76,7 @@ export const create = action({
             resolveConversationTool: resolveConversation,
             searchTool: search,
           },
-        }
+        },
       );
     } else {
       await saveMessage(ctx, components.agent, {
