@@ -26,7 +26,7 @@ export const IntegrationsDialog = ({
     try {
       await navigator.clipboard.writeText(snippet);
 
-      toast.success("Organization ID copied");
+      toast.success("Code snippet copied");
     } catch (error) {
       console.error(error);
       toast.error("Something went wrong");
