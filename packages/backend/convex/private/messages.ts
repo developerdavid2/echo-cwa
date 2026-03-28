@@ -1,7 +1,7 @@
 import { saveMessage } from "@convex-dev/agent";
 import { paginationOptsValidator } from "convex/server";
 import { ConvexError, v } from "convex/values";
-import { components } from "../_generated/api";
+import { components, internal } from "../_generated/api";
 import { action, mutation, query } from "../_generated/server";
 import { supportAgent } from "../system/ai/agents/supportAgent";
 import { generateText } from "ai";
@@ -15,7 +15,21 @@ export const enhanceResponse = action({
     prompt: v.string(),
   },
   handler: async (ctx, args) => {
-    await requireAuth(ctx);
+    const { orgId } = await requireAuth(ctx);
+
+    const subscriptions = await ctx.runQuery(
+      internal.system.subscriptions.getByOrganizationId,
+      {
+        organizationId: orgId,
+      },
+    );
+
+    if (subscriptions?.status !== "active") {
+      throw new ConvexError({
+        code: "BAD_REQUEST",
+        message: "Misssing subscription",
+      });
+    }
     const response = await generateText({
       model: groq("llama-3.1-8b-instant"),
       messages: [

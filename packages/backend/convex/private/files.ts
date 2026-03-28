@@ -14,6 +14,7 @@ import rag from "../system/ai/rag";
 import { Id } from "../_generated/dataModel";
 import { paginationOptsValidator } from "convex/server";
 import { requireAuth } from "../lib/auth";
+import { internal } from "../_generated/api";
 
 function guessMimeType(filename: string, bytes: ArrayBuffer): string {
   return (
@@ -32,6 +33,20 @@ export const addFile = action({
   },
   handler: async (ctx, args) => {
     const { orgId } = await requireAuth(ctx);
+
+    const subscriptions = await ctx.runQuery(
+      internal.system.subscriptions.getByOrganizationId,
+      {
+        organizationId: orgId,
+      },
+    );
+
+    if (subscriptions?.status !== "active") {
+      throw new ConvexError({
+        code: "BAD_REQUEST",
+        message: "Misssing subscription",
+      });
+    }
 
     const { bytes, filename, category } = args;
 
