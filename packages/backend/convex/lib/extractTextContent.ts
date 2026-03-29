@@ -24,7 +24,7 @@ const SYSTEM_PROMPTS = {
   html: "You tranform content into markdown",
 };
 
-export type ExtracTextContentArgs = {
+export type ExtractTextContentArgs = {
   storageId: Id<"_storage">;
   filename: string;
   bytes?: ArrayBuffer;
@@ -33,7 +33,7 @@ export type ExtracTextContentArgs = {
 
 export async function extractTextContent(
   ctx: { storage: StorageActionWriter },
-  args: ExtracTextContentArgs
+  args: ExtractTextContentArgs,
 ): Promise<string> {
   const { storageId, filename, bytes, mimeType } = args;
 
@@ -59,7 +59,7 @@ async function extractTextFileContent(
   ctx: { storage: StorageActionWriter },
   storageId: Id<"_storage">,
   bytes: ArrayBuffer | undefined,
-  mimeType: string
+  mimeType: string,
 ): Promise<string> {
   const arrayBuffer =
     bytes || (await (await ctx.storage.get(storageId))?.arrayBuffer());
@@ -97,7 +97,7 @@ async function extractTextFileContent(
 async function extractPdfText(
   url: string,
   mimeType: string,
-  filename: string
+  filename: string,
 ): Promise<string> {
   const result = await generateText({
     model: AI_MODELS.pdf,
